@@ -1,0 +1,15 @@
+number = @{ ASCII_DIGIT+ }
+
+expression = { number ~ unit* ~ (operation ~ term)* }
+term = _{ number ~ unit* | "(" ~ expression ~ ")" }
+
+unit = @{ ASCII_ALPHA+ }
+
+operation = @{ add | subtract | multiply | divide | power }
+    add      = { "+" }
+    subtract = { "-" }
+    multiply = { "*" }
+    divide   = { "/" }
+    power    = { "^" }
+
+WHITESPACE = _{ " " | "\t" }
