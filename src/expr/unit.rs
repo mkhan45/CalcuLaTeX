@@ -3,7 +3,15 @@ use num::{One, Zero};
 
 use std::collections::BTreeMap;
 
-enum UnitDim {
+pub const UNIT_PREFIXES: [(&str, i8); 5] = [
+    ("centi", -2),
+    ("deci", -1),
+    ("deca", 1),
+    ("hecto", 2),
+    ("kilo", 3),
+];
+
+enum UnitType {
     Length,
     Mass,
     Time,
@@ -13,16 +21,16 @@ enum UnitDim {
     Luminosity,
 }
 
-impl ToString for UnitDim {
+impl ToString for UnitType {
     fn to_string(&self) -> String {
         match self {
-            UnitDim::Length => "length",
-            UnitDim::Mass => "mass",
-            UnitDim::Time => "time",
-            UnitDim::Current => "current",
-            UnitDim::Temperature => "temperature",
-            UnitDim::Moles => "moles",
-            UnitDim::Luminosity => "luminosity",
+            UnitType::Length => "length",
+            UnitType::Mass => "mass",
+            UnitType::Time => "time",
+            UnitType::Current => "current",
+            UnitType::Temperature => "temperature",
+            UnitType::Moles => "moles",
+            UnitType::Luminosity => "luminosity",
         }
         .to_string()
     }
@@ -30,7 +38,7 @@ impl ToString for UnitDim {
 
 pub enum BaseUnit {
     Meter,
-    Kilogram,
+    Gram,
     Second,
     Ampere,
     Kelvin,
@@ -42,7 +50,7 @@ impl ToString for BaseUnit {
     fn to_string(&self) -> String {
         match self {
             BaseUnit::Meter => "meter",
-            BaseUnit::Kilogram => "kilogram",
+            BaseUnit::Gram => "gram",
             BaseUnit::Second => "second",
             BaseUnit::Ampere => "ampere",
             BaseUnit::Kelvin => "kelvin",
@@ -55,7 +63,7 @@ impl ToString for BaseUnit {
 
 const BASE_UNITS: [BaseUnit; 7] = [
     BaseUnit::Meter,
-    BaseUnit::Kilogram,
+    BaseUnit::Gram,
     BaseUnit::Second,
     BaseUnit::Ampere,
     BaseUnit::Kelvin,
@@ -75,12 +83,31 @@ impl Unit {
     }
 }
 
+impl PartialEq for Unit {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Unit::Base(a), Unit::Base(b)) => a == b,
+            _ => todo!(),
+        }
+    }
+}
+
+impl From<&str> for Unit {
+    fn from(s: &str) -> Self {
+        match s {
+            "meters" | "meter" => BaseUnit::Meter.into(),
+            "grams" | "gram" => BaseUnit::Gram.into(),
+            _ => todo!(),
+        }
+    }
+}
+
 impl From<BaseUnit> for Unit {
     fn from(b: BaseUnit) -> Self {
         let mut arr = [Ratio::zero(); 7];
         let index = match b {
             BaseUnit::Meter => 0,
-            BaseUnit::Kilogram => 1,
+            BaseUnit::Gram => 1,
             BaseUnit::Second => 2,
             BaseUnit::Ampere => 3,
             BaseUnit::Kelvin => 4,
@@ -131,7 +158,7 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
-        assert_eq!(format!("{}", u).as_str(), "meter kilogram");
+        assert_eq!(format!("{}", u).as_str(), "meter gram");
 
         let u = Unit::Base([
             Ratio::one(),
@@ -142,6 +169,44 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
-        assert_eq!(format!("{}", u).as_str(), "meter kilogram^2 second^-1");
+        assert_eq!(format!("{}", u).as_str(), "meter gram^2 second^-1");
+    }
+}
+
+impl std::ops::Mul for Unit {
+    type Output = Unit;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Unit::Base(a), Unit::Base(b)) => {
+                let mut res = [Ratio::zero(); 7];
+                res.iter_mut()
+                    .zip(a.iter().zip(b.iter()))
+                    .for_each(|(r, (a, b))| {
+                        *r = a + b;
+                    });
+                Unit::Base(res)
+            }
+            _ => todo!(),
+        }
+    }
+}
+
+impl std::ops::Div for Unit {
+    type Output = Unit;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Unit::Base(a), Unit::Base(b)) => {
+                let mut res = [Ratio::zero(); 7];
+                res.iter_mut()
+                    .zip(a.iter().zip(b.iter()))
+                    .for_each(|(r, (a, b))| {
+                        *r = a - b;
+                    });
+                Unit::Base(res)
+            }
+            _ => todo!(),
+        }
     }
 }

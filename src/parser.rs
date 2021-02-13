@@ -3,7 +3,7 @@ use pest::Parser;
 use pest_derive::*;
 
 use crate::{
-    expr::unit::Unit,
+    expr::unit::{Unit, UNIT_PREFIXES},
     expr::val::Val,
     expr::{Expr, Op},
 };
@@ -18,7 +18,7 @@ pub fn parse_expr(in_str: &str) -> Expr {
             let mut lhs = match nx.as_rule() {
                 Rule::number => Expr::Atom(Val {
                     unit: Unit::empty(),
-                    num: 0.0, // TODO fix
+                    num: nx.as_str().trim().parse().unwrap(),
                 }),
                 _ => {
                     dbg!(nx);
@@ -32,9 +32,26 @@ pub fn parse_expr(in_str: &str) -> Expr {
                         Rule::operation => match nx.as_str().trim() {
                             "+" => Op::Plus,
                             "-" => Op::Minus,
+                            "*" => Op::Mul,
+                            "/" => Op::Div,
                             _ => panic!("Bad operator {}", nx.as_str().trim()),
                         },
-                        Rule::unit => todo!(),
+                        Rule::unit => {
+                            let token = nx.as_str();
+                            let res = UNIT_PREFIXES.iter().find_map(|(prefix, pow)| {
+                                if token.starts_with(prefix) {
+                                    Some(Op::AddMultiUnit(*pow, token[prefix.len()..].into()))
+                                } else {
+                                    None
+                                }
+                            });
+
+                            if let Some(op) = res {
+                                op
+                            } else {
+                                Op::AddUnit(token.into())
+                            }
+                        }
                         _ => todo!(),
                     };
 
@@ -64,7 +81,7 @@ pub fn parse_expr(in_str: &str) -> Expr {
 
             lhs
         } else {
-            Expr::Empty
+            unreachable!()
         }
     }
 
@@ -74,7 +91,7 @@ pub fn parse_expr(in_str: &str) -> Expr {
 
 fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
     Some(match op {
-        Op::AddUnit(_) => (1, ()),
+        Op::AddUnit(_) | Op::AddMultiUnit(_, _) => (9, ()),
         _ => return None,
     })
 }
@@ -82,6 +99,7 @@ fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
 fn infix_binding_power(op: &Op) -> (u8, u8) {
     match op {
         Op::Plus | Op::Minus => (1, 2),
+        Op::Mul | Op::Div => (3, 4),
         _ => panic!(),
     }
 }
