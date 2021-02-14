@@ -25,7 +25,11 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                     num: nx.as_str().trim().parse().unwrap(),
                 }),
                 Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
-                _ => unreachable!(),
+                Rule::expression => parse_expr(nx),
+                _ => {
+                    dbg!(nx);
+                    unreachable!();
+                }
             };
 
             while let Some(nx) = inp.peek() {
@@ -152,16 +156,5 @@ mod tests {
                 5 + 10
             ",
         );
-    }
-
-    #[test]
-    fn test() {
-        dbg!(parse_expr(
-            MathParser::parse(Rule::expression, "5 grams / meters")
-                .unwrap()
-                .next()
-                .unwrap()
-        ));
-        panic!();
     }
 }

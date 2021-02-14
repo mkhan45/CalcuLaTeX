@@ -51,13 +51,13 @@ pub enum BaseUnit {
 impl ToString for BaseUnit {
     fn to_string(&self) -> String {
         match self {
-            BaseUnit::Meter => "meter",
-            BaseUnit::Gram => "gram",
-            BaseUnit::Second => "second",
-            BaseUnit::Ampere => "ampere",
-            BaseUnit::Kelvin => "kelvin",
-            BaseUnit::Mole => "mole",
-            BaseUnit::Candela => "candela",
+            BaseUnit::Meter => "m",
+            BaseUnit::Gram => "gm",
+            BaseUnit::Second => "s",
+            BaseUnit::Ampere => "A",
+            BaseUnit::Kelvin => "K",
+            BaseUnit::Mole => "M",
+            BaseUnit::Candela => "cd",
         }
         .to_string()
     }
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     fn test_disp() {
         let u: Unit = BaseUnit::Meter.into();
-        assert_eq!(format!("{}", u).as_str(), "meter");
+        assert_eq!(format!("{}", u).as_str(), "m");
 
         let u = Unit::Base([
             Ratio::one(),
@@ -165,7 +165,7 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
-        assert_eq!(format!("{}", u).as_str(), "meter gram");
+        assert_eq!(format!("{}", u).as_str(), "m gm");
 
         let u = Unit::Base([
             Ratio::one(),
@@ -176,7 +176,7 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
-        assert_eq!(format!("{}", u).as_str(), "meter gram^2 second^-1");
+        assert_eq!(format!("{}", u).as_str(), "m gm^2 s^-1");
     }
 }
 

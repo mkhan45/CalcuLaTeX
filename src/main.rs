@@ -10,7 +10,6 @@ mod statement;
 use statement::{Scope, State};
 
 mod latex;
-use latex::ToLaTeX;
 
 fn full_eval(s: &str) -> Val {
     let scope = Scope::default();
@@ -33,23 +32,23 @@ mod tests {
         assert_eq!(full_eval("5 - 3").to_string(), "2".to_string());
         assert_eq!(
             full_eval("5 grams - 4 grams").to_string(),
-            "1 gram".to_string()
+            "1 gm".to_string()
         );
         assert_eq!(
             full_eval("5 grams + 4 grams").to_string(),
-            "9 grams".to_string()
+            "9 gm".to_string()
         );
         assert_eq!(
             full_eval("5 kilograms + 4 grams").to_string(),
-            "5004 grams".to_string()
+            "5004 gm".to_string()
         );
         assert_eq!(
             full_eval("5 meters * 4 grams").to_string(),
-            "20 meter grams".to_string()
+            "20 m gm".to_string()
         );
         assert_eq!(
             full_eval("5 meters / 4 grams").to_string(),
-            "1.25 meter gram^-1s".to_string()
+            "1.25 m gm^-1".to_string()
         );
     }
 }

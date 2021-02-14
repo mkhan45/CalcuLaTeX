@@ -29,12 +29,12 @@ impl ToLaTeX for Expr {
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
             Expr::Cons(op, e) => match (op, e.as_slice()) {
                 (Op::Plus, [a, b, ..]) => LaTeX::Math(format!(
-                    "{} + {}",
+                    "({} + {})",
                     a.to_latex().to_string(),
                     b.to_latex().to_string()
                 )),
                 (Op::Minus, [a, b, ..]) => LaTeX::Math(format!(
-                    "{} - {}",
+                    "({} - {})",
                     a.to_latex().to_string(),
                     b.to_latex().to_string()
                 )),
@@ -48,6 +48,17 @@ impl ToLaTeX for Expr {
                     a.to_latex().to_string(),
                     b.to_latex().to_string()
                 )),
+                (Op::AddUnit(u), [v]) => LaTeX::Math(format!(
+                    "{} {}",
+                    v.to_latex().to_string(),
+                    u.to_latex().to_string()
+                )),
+                (Op::AddMultiUnit(p, u), [v]) => LaTeX::Math(format!(
+                    "{} {} \\times 10^{{{}}}",
+                    v.to_latex().to_string(),
+                    u.to_latex().to_string(),
+                    p.to_string(),
+                )),
                 _ => todo!(),
             },
         }
@@ -57,8 +68,12 @@ impl ToLaTeX for Expr {
 impl ToLaTeX for Val {
     fn to_latex(&self) -> LaTeX {
         let unit_str = self.unit.to_latex().to_string();
-        let out = format!("{} \\ {}", self.num, unit_str);
-        LaTeX::Math(format!("{}", out.trim()))
+        let out = if !unit_str.is_empty() {
+            format!("{} \\ {}", self.num, unit_str)
+        } else {
+            self.num.to_string()
+        };
+        LaTeX::Math(out.trim().to_string())
     }
 }
 
