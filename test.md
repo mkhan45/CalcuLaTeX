@@ -1,7 +1,5 @@
-$x = 5 \ gram$\newline
-$y = 10000 \ gram$\newline
-$x + \frac{y}{5} = 2005 \ gram$\newline
-$z = 5 \ gram$\newline
-$c = 5 \ meter$\newline
-$c \times c = 25 \ meter^{2}$\newline
-$d = 5 \ meter^{-1} gram$\newline
+$yvel = \frac{10 m}{s}$\newline
+$g = \frac{\frac{10 m}{s}}{s}$\newline
+$dt = 10 s$\newline
+$h = (yvel \times dt - \frac{1}{2} \times g \times dt \times dt)$\newline
+$h = -400 \ m$\newline

@@ -39,12 +39,12 @@ impl Expr {
                 }
             }
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {
-                (Op::Plus, [a, b, ..]) => e(a) + e(b),
-                (Op::Minus, [a, b, ..]) => e(a) - e(b),
-                (Op::Mul, [a, b, ..]) => e(a) * e(b),
-                (Op::Div, [a, b, ..]) => e(a) / e(b),
-                (Op::AddUnit(u), [v, ..]) => e(v).with_unit(&u),
-                (Op::AddMultiUnit(pow, u), [v, ..]) => (e(v)
+                (Op::Plus, [a, b]) => e(a) + e(b),
+                (Op::Minus, [a, b]) => e(a) - e(b),
+                (Op::Mul, [a, b]) => e(a) * e(b),
+                (Op::Div, [a, b]) => e(a) / e(b),
+                (Op::AddUnit(u), [v]) => e(v).with_unit(&u),
+                (Op::AddMultiUnit(pow, u), [v]) => (e(v)
                     * Val {
                         num: 10f64.powi(*pow as i32),
                         unit: Unit::empty(),

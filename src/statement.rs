@@ -31,8 +31,8 @@ impl State {
                 Statement::VarDec { lhs, rhs } => {
                     println!(
                         "${} = {}$\\newline",
-                        lhs,
-                        rhs.eval(&self.scope).to_latex().to_string()
+                        lhs.trim(),
+                        rhs.to_latex().to_string().trim_end(),
                     );
                     self.scope
                         .variables
@@ -41,8 +41,8 @@ impl State {
                 Statement::PrintExpr { parsed: expr, .. } => {
                     println!(
                         "${} = {}$\\newline",
-                        expr.to_latex().to_string(),
-                        expr.eval(&self.scope).to_latex().to_string(),
+                        expr.to_latex().to_string().trim(),
+                        expr.eval(&self.scope).to_latex().to_string().trim_end(),
                     );
                 }
             }
