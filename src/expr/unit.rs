@@ -63,7 +63,7 @@ impl ToString for BaseUnit {
     }
 }
 
-const BASE_UNITS: [BaseUnit; 7] = [
+pub const BASE_UNITS: [BaseUnit; 7] = [
     BaseUnit::Meter,
     BaseUnit::Gram,
     BaseUnit::Second,
@@ -97,8 +97,13 @@ impl PartialEq for Unit {
 impl From<&str> for Unit {
     fn from(s: &str) -> Self {
         match s {
-            "meters" | "meter" => BaseUnit::Meter.into(),
-            "grams" | "gram" => BaseUnit::Gram.into(),
+            "meters" | "meter" | "m" => BaseUnit::Meter.into(),
+            "grams" | "gram" | "gm" => BaseUnit::Gram.into(),
+            "second" | "seconds" | "s" => BaseUnit::Second.into(),
+            "amp" | "amps" | "ampere" | "amperes" => BaseUnit::Ampere.into(),
+            "kelvin" | "K" => BaseUnit::Kelvin.into(),
+            "moles" | "mols" | "mol" | "mole" | "M" => BaseUnit::Mole.into(),
+            "candela" => BaseUnit::Candela.into(),
             _ => todo!(),
         }
     }
