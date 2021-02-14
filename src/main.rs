@@ -1,11 +1,21 @@
+use pest::Parser;
+
 mod parser;
-use parser::parse_expr;
+use parser::{parse_expr, MathParser, Rule};
 
 mod expr;
 use expr::val::Val;
 
+mod statement;
+
 fn full_eval(s: &str) -> Val {
-    parse_expr(s).eval()
+    parse_expr(
+        MathParser::parse(Rule::expression, s)
+            .unwrap()
+            .next()
+            .unwrap(),
+    )
+    .eval()
 }
 
 #[cfg(test)]
@@ -40,5 +50,7 @@ mod tests {
 
 fn main() {
     let args = std::env::args().collect::<Vec<String>>();
-    println!("{}", full_eval(&args[1]));
+    let filename = &args[1];
+    let contents = std::fs::read_to_string(filename).unwrap();
+    println!("{:?}", parser::parse_block(&contents));
 }

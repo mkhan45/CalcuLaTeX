@@ -7,6 +7,7 @@ use unit::*;
 #[derive(Debug)]
 pub enum Expr {
     Atom(Val),
+    Ident(String),
     Cons(Op, Vec<Expr>),
 }
 
@@ -14,6 +15,7 @@ impl std::fmt::Display for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Expr::Atom(v) => write!(f, "{}", v),
+            Expr::Ident(n) => write!(f, "{}", n),
             Expr::Cons(op, e) => write!(f, "({:?}, {:?})", op, e),
         }
     }
@@ -23,6 +25,7 @@ impl Expr {
     pub fn eval(&self) -> Val {
         match self {
             Expr::Atom(v) => v.clone(),
+            Expr::Ident(_n) => todo!(),
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {
                 (Op::Plus, [a, b, ..]) => a.eval() + b.eval(),
                 (Op::Minus, [a, b, ..]) => a.eval() - b.eval(),

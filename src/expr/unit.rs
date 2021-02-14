@@ -11,30 +11,30 @@ pub const UNIT_PREFIXES: [(&str, i8); 5] = [
     ("kilo", 3),
 ];
 
-enum UnitType {
-    Length,
-    Mass,
-    Time,
-    Current,
-    Temperature,
-    Moles,
-    Luminosity,
-}
+// enum UnitType {
+//     Length,
+//     Mass,
+//     Time,
+//     Current,
+//     Temperature,
+//     Moles,
+//     Luminosity,
+// }
 
-impl ToString for UnitType {
-    fn to_string(&self) -> String {
-        match self {
-            UnitType::Length => "length",
-            UnitType::Mass => "mass",
-            UnitType::Time => "time",
-            UnitType::Current => "current",
-            UnitType::Temperature => "temperature",
-            UnitType::Moles => "moles",
-            UnitType::Luminosity => "luminosity",
-        }
-        .to_string()
-    }
-}
+// impl ToString for UnitType {
+//     fn to_string(&self) -> String {
+//         match self {
+//             UnitType::Length => "length",
+//             UnitType::Mass => "mass",
+//             UnitType::Time => "time",
+//             UnitType::Current => "current",
+//             UnitType::Temperature => "temperature",
+//             UnitType::Moles => "moles",
+//             UnitType::Luminosity => "luminosity",
+//         }
+//         .to_string()
+//     }
+// }
 
 pub enum BaseUnit {
     Meter,
@@ -133,7 +133,7 @@ impl std::fmt::Display for Unit {
                         });
                 write!(f, "{}", res.trim())
             }
-            Unit::Custom(map) => {
+            Unit::Custom(_map) => {
                 todo!()
             }
         }

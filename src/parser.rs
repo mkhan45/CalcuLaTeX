@@ -1,6 +1,8 @@
-use pest::iterators::Pairs;
+use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use pest_derive::*;
+
+use crate::statement::Statement;
 
 use crate::{
     expr::unit::{Unit, UNIT_PREFIXES},
@@ -12,7 +14,9 @@ use crate::{
 #[grammar = "parser/grammar.pest"]
 pub struct MathParser;
 
-pub fn parse_expr(in_str: &str) -> Expr {
+pub fn parse_expr(r: Pair<Rule>) -> Expr {
+    assert_eq!(r.as_rule(), Rule::expression);
+
     fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> Expr {
         if let Some(nx) = inp.next() {
             let mut lhs = match nx.as_rule() {
@@ -20,10 +24,8 @@ pub fn parse_expr(in_str: &str) -> Expr {
                     unit: Unit::empty(),
                     num: nx.as_str().trim().parse().unwrap(),
                 }),
-                _ => {
-                    dbg!(nx);
-                    todo!();
-                }
+                Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
+                _ => unreachable!(),
             };
 
             loop {
@@ -85,8 +87,7 @@ pub fn parse_expr(in_str: &str) -> Expr {
         }
     }
 
-    let mut inp = MathParser::parse(Rule::expression, in_str).unwrap();
-    expr_bp(&mut inp.next().unwrap().into_inner(), 0)
+    expr_bp(&mut r.into_inner(), 0)
 }
 
 fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
@@ -101,5 +102,53 @@ fn infix_binding_power(op: &Op) -> (u8, u8) {
         Op::Plus | Op::Minus => (1, 2),
         Op::Mul | Op::Div => (3, 4),
         _ => panic!(),
+    }
+}
+
+fn parse_var_dec(r: Pair<Rule>) -> Statement {
+    assert_eq!(r.as_rule(), Rule::var_dec);
+    let mut inner = r.into_inner();
+    let lhs = inner.next().unwrap();
+    let rhs = inner.next().unwrap();
+    Statement::VarDec {
+        lhs: lhs.as_str().to_string(),
+        rhs: parse_expr(rhs),
+    }
+}
+
+fn parse_print_stmt(r: Pair<Rule>) -> Statement {
+    assert_eq!(r.as_rule(), Rule::print_expr);
+    let mut inner = r.into_inner();
+    let lhs = inner.next().unwrap();
+    Statement::PrintExpr(parse_expr(lhs))
+}
+
+pub fn parse_block(s: &str) -> Vec<Statement> {
+    let inp = MathParser::parse(Rule::program, s).unwrap();
+    inp.map(|s| {
+        let stmt = s.into_inner().next().unwrap();
+        match stmt.as_rule() {
+            Rule::expression => Statement::ExprStmt(parse_expr(stmt)),
+            Rule::var_dec => parse_var_dec(stmt),
+            Rule::print_expr => parse_print_stmt(stmt),
+            _ => unreachable!(),
+        }
+    })
+    .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parser() {
+        // just check if it doesn't crash rn
+        parse_block(
+            "
+                x = 5
+                5 + 10
+            ",
+        );
     }
 }
