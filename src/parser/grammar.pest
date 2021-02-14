@@ -1,8 +1,8 @@
 number = @{ ASCII_DIGIT+ }
-ident = @{ ASCII_ALPHA+ }
+ident = @{ ASCII_ALPHA ~ ASCII_ALPHANUMERIC* }
 
 expression = { (ident | number) ~ unit* ~ (operation ~ term)* }
-term = _{ (ident | number) ~ unit* | "(" ~ expression ~ ")" }
+    term = _{ (ident | number) ~ unit* | "(" ~ expression ~ ")" }
 
 unit = @{ ASCII_ALPHA+ }
 

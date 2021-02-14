@@ -4,6 +4,8 @@ use val::*;
 pub mod unit;
 use unit::*;
 
+use crate::statement::Scope;
+
 #[derive(Debug)]
 pub enum Expr {
     Atom(Val),
@@ -22,17 +24,18 @@ impl std::fmt::Display for Expr {
 }
 
 impl Expr {
-    pub fn eval(&self) -> Val {
+    pub fn eval(&self, scope: &Scope) -> Val {
+        let e = |a: &Expr| a.eval(scope);
         match self {
             Expr::Atom(v) => v.clone(),
-            Expr::Ident(_n) => todo!(),
+            Expr::Ident(n) => scope.variables.get(n).unwrap().clone(),
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {
-                (Op::Plus, [a, b, ..]) => a.eval() + b.eval(),
-                (Op::Minus, [a, b, ..]) => a.eval() - b.eval(),
-                (Op::Mul, [a, b, ..]) => a.eval() * b.eval(),
-                (Op::Div, [a, b, ..]) => a.eval() / b.eval(),
-                (Op::AddUnit(u), [v, ..]) => v.eval().with_unit(&u),
-                (Op::AddMultiUnit(pow, u), [v, ..]) => (v.eval()
+                (Op::Plus, [a, b, ..]) => e(a) + e(b),
+                (Op::Minus, [a, b, ..]) => e(a) - e(b),
+                (Op::Mul, [a, b, ..]) => e(a) * e(b),
+                (Op::Div, [a, b, ..]) => e(a) / e(b),
+                (Op::AddUnit(u), [v, ..]) => e(v).with_unit(&u),
+                (Op::AddMultiUnit(pow, u), [v, ..]) => (e(v)
                     * Val {
                         num: 10f64.powi(*pow as i32),
                         unit: Unit::empty(),

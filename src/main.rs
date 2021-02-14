@@ -7,15 +7,18 @@ mod expr;
 use expr::val::Val;
 
 mod statement;
+use statement::{Scope, State};
 
 fn full_eval(s: &str) -> Val {
+    let scope = Scope::default();
+
     parse_expr(
         MathParser::parse(Rule::expression, s)
             .unwrap()
             .next()
             .unwrap(),
     )
-    .eval()
+    .eval(&scope)
 }
 
 #[cfg(test)]
@@ -52,5 +55,11 @@ fn main() {
     let args = std::env::args().collect::<Vec<String>>();
     let filename = &args[1];
     let contents = std::fs::read_to_string(filename).unwrap();
-    println!("{:?}", parser::parse_block(&contents));
+
+    let mut state = State {
+        scope: Scope::default(),
+        statements: parser::parse_block(&contents),
+    };
+
+    state.exec();
 }
