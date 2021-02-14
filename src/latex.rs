@@ -1,4 +1,8 @@
+use crate::expr::unit::BASE_UNITS;
 use crate::expr::{unit::Unit, val::Val, Expr, Op};
+use num::rational::Ratio;
+use num::One;
+use num::Zero;
 
 pub enum LaTeX {
     Text(String),
@@ -52,13 +56,29 @@ impl ToLaTeX for Expr {
 
 impl ToLaTeX for Val {
     fn to_latex(&self) -> LaTeX {
-        let unit_str = if (self.num.abs() - 1.0).abs() > f64::EPSILON && self.unit != Unit::empty()
-        {
-            format!("{}s", self.unit.to_string())
-        } else {
-            self.unit.to_string()
-        };
-        let out = format!("{} \\text{{ {}}}", self.num, unit_str);
+        let unit_str = self.unit.to_latex().to_string();
+        let out = format!("{} \\ {}", self.num, unit_str);
         LaTeX::Math(format!("{}", out.trim()))
+    }
+}
+
+impl ToLaTeX for Unit {
+    fn to_latex(&self) -> LaTeX {
+        match self {
+            Unit::Base(arr) => {
+                let res =
+                    arr.iter()
+                        .zip(BASE_UNITS.iter())
+                        .fold("".to_string(), |acc, (pow, unit)| match pow {
+                            r if r == &Ratio::zero() => acc,
+                            r if r == &Ratio::one() => format!("{} {}", acc, unit.to_string()),
+                            _ => format!("{} {}^{{{}}}", acc, unit.to_string(), pow),
+                        });
+                LaTeX::Math(res.trim().to_string())
+            }
+            Unit::Custom(_map) => {
+                todo!()
+            }
+        }
     }
 }

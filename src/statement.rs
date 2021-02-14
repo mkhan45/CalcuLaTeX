@@ -40,7 +40,7 @@ impl State {
                 }
                 Statement::PrintExpr { parsed: expr, .. } => {
                     println!(
-                        "${} = {}\\newline$",
+                        "${} = {}$\\newline",
                         expr.to_latex().to_string(),
                         expr.eval(&self.scope).to_latex().to_string(),
                     );

@@ -28,7 +28,16 @@ impl Expr {
         let e = |a: &Expr| a.eval(scope);
         match self {
             Expr::Atom(v) => v.clone(),
-            Expr::Ident(n) => scope.variables.get(n).unwrap().clone(),
+            Expr::Ident(n) => {
+                if let Some(v) = scope.variables.get(n) {
+                    v.clone()
+                } else {
+                    Val {
+                        num: 1.0,
+                        unit: n.as_str().into(),
+                    }
+                }
+            }
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {
                 (Op::Plus, [a, b, ..]) => e(a) + e(b),
                 (Op::Minus, [a, b, ..]) => e(a) - e(b),

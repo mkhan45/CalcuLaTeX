@@ -153,4 +153,15 @@ mod tests {
             ",
         );
     }
+
+    #[test]
+    fn test() {
+        dbg!(parse_expr(
+            MathParser::parse(Rule::expression, "5 grams / meters")
+                .unwrap()
+                .next()
+                .unwrap()
+        ));
+        panic!();
+    }
 }
