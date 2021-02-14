@@ -1,3 +1,5 @@
+#![allow(clippy::clippy::suspicious_arithmetic_impl)]
+
 use num::rational::Ratio;
 use num::{One, Zero};
 

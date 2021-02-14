@@ -9,7 +9,7 @@ pub struct Val {
 impl std::fmt::Display for Val {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = format!("{} {}", self.num, self.unit.to_string());
-        if self.num.abs() != 1.0 && self.unit != Unit::empty() {
+        if (self.num.abs() - 1.0).abs() > f64::EPSILON && self.unit != Unit::empty() {
             out.push('s');
         }
         write!(f, "{}", out.trim())

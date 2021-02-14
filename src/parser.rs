@@ -28,57 +28,53 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                 _ => unreachable!(),
             };
 
-            loop {
-                if let Some(nx) = inp.peek() {
-                    let op = match nx.as_rule() {
-                        Rule::operation => match nx.as_str().trim() {
-                            "+" => Op::Plus,
-                            "-" => Op::Minus,
-                            "*" => Op::Mul,
-                            "/" => Op::Div,
-                            _ => panic!("Bad operator {}", nx.as_str().trim()),
-                        },
-                        Rule::unit => {
-                            let token = nx.as_str();
-                            let res = UNIT_PREFIXES.iter().find_map(|(prefix, pow)| {
-                                if token.starts_with(prefix) {
-                                    Some(Op::AddMultiUnit(*pow, token[prefix.len()..].into()))
-                                } else {
-                                    None
-                                }
-                            });
-
-                            if let Some(op) = res {
-                                op
+            while let Some(nx) = inp.peek() {
+                let op = match nx.as_rule() {
+                    Rule::operation => match nx.as_str().trim() {
+                        "+" => Op::Plus,
+                        "-" => Op::Minus,
+                        "*" => Op::Mul,
+                        "/" => Op::Div,
+                        _ => panic!("Bad operator {}", nx.as_str().trim()),
+                    },
+                    Rule::unit => {
+                        let token = nx.as_str();
+                        let res = UNIT_PREFIXES.iter().find_map(|(prefix, pow)| {
+                            if let Some(stripped) = token.strip_prefix(prefix) {
+                                Some(Op::AddMultiUnit(*pow, stripped.into()))
                             } else {
-                                Op::AddUnit(token.into())
+                                None
                             }
+                        });
+
+                        if let Some(op) = res {
+                            op
+                        } else {
+                            Op::AddUnit(token.into())
                         }
-                        _ => todo!(),
-                    };
-
-                    if let Some((l_bp, ())) = postfix_binding_power(&op) {
-                        if l_bp < bp {
-                            break;
-                        }
-                        inp.next();
-
-                        lhs = Expr::Cons(op, vec![lhs]);
-
-                        continue;
                     }
+                    _ => todo!(),
+                };
 
-                    let (l_bp, r_bp) = infix_binding_power(&op);
+                if let Some((l_bp, ())) = postfix_binding_power(&op) {
                     if l_bp < bp {
                         break;
                     }
                     inp.next();
 
-                    let rhs = expr_bp(inp, r_bp);
-                    lhs = Expr::Cons(op, vec![lhs, rhs]);
-                } else {
+                    lhs = Expr::Cons(op, vec![lhs]);
+
+                    continue;
+                }
+
+                let (l_bp, r_bp) = infix_binding_power(&op);
+                if l_bp < bp {
                     break;
                 }
+                inp.next();
+
+                let rhs = expr_bp(inp, r_bp);
+                lhs = Expr::Cons(op, vec![lhs, rhs]);
             }
 
             lhs
