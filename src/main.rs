@@ -9,6 +9,9 @@ use expr::val::Val;
 mod statement;
 use statement::{Scope, State};
 
+mod latex;
+use latex::ToLaTeX;
+
 fn full_eval(s: &str) -> Val {
     let scope = Scope::default();
 
