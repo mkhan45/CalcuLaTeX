@@ -7,3 +7,5 @@ version = "0.1.0"
 [dependencies]
 pest = "2.1.3"
 pest_derive = "2.1.0"
+
+num = "0.3.1"
