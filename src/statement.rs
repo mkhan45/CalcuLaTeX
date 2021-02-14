@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
-use crate::expr::Expr;
 use crate::Val;
+use crate::{expr::Expr, latex::ToLaTeX};
 
 #[derive(Default)]
 pub struct Scope {
@@ -29,15 +29,21 @@ impl State {
                     let _res = expr.eval(&self.scope);
                 }
                 Statement::VarDec { lhs, rhs } => {
+                    println!(
+                        "${} = {}$\\newline",
+                        lhs,
+                        rhs.eval(&self.scope).to_latex().to_string()
+                    );
                     self.scope
                         .variables
                         .insert(lhs.clone(), rhs.eval(&self.scope));
                 }
-                Statement::PrintExpr {
-                    parsed: expr,
-                    string,
-                } => {
-                    println!("{} = {}", string, expr.eval(&self.scope));
+                Statement::PrintExpr { parsed: expr, .. } => {
+                    println!(
+                        "${} = {}\\newline$",
+                        expr.to_latex().to_string(),
+                        expr.eval(&self.scope).to_latex().to_string(),
+                    );
                 }
             }
         }
