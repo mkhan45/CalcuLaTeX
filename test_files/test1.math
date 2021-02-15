@@ -7,5 +7,4 @@ g = ?
 dt^2 = ?
 
 y_{vel} = ?
-h = y_{vel} * dt - ((1/2) * g * dt^2)
-h = ?
+h = y_{vel} * dt - ((1/2) * g * dt^2) = ?
