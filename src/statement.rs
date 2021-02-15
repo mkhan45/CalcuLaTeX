@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
-use crate::Val;
 use crate::{expr::Expr, latex::ToLaTeX};
+use crate::{parser, Val};
 
 #[derive(Default)]
 pub struct Scope {
@@ -20,9 +20,20 @@ pub enum Statement {
 pub struct State {
     pub scope: Scope,
     pub statements: Vec<Statement>,
+    pub output: String,
 }
 
 impl State {
+    pub fn new(contents: &String) -> Self {
+        let output = "\\documentclass{article}\n\\begin{document}\n".to_string();
+
+        State {
+            scope: Scope::default(),
+            statements: parser::parse_block(&contents),
+            output,
+        }
+    }
+
     pub fn exec(&mut self) {
         for stmt in self.statements.iter() {
             match stmt {
@@ -30,33 +41,43 @@ impl State {
                     let _res = expr.eval(&self.scope);
                 }
                 Statement::VarDec { lhs, rhs } => {
-                    println!(
-                        "${} = {}$\\newline",
-                        lhs.trim(),
-                        rhs.to_latex().to_string().trim_end(),
+                    self.output.push_str(
+                        format!(
+                            "${} = {}$\\\\\n",
+                            lhs.trim(),
+                            rhs.to_latex().to_string().trim_end(),
+                        )
+                        .as_str(),
                     );
                     self.scope
                         .variables
                         .insert(lhs.clone(), rhs.eval(&self.scope));
                 }
                 Statement::PrintExpr(expr) => {
-                    println!(
-                        "${} = {}$\\newline",
-                        expr.to_latex().to_string().trim(),
-                        expr.eval(&self.scope).to_latex().to_string().trim_end(),
+                    self.output.push_str(
+                        format!(
+                            "${} = {}$\\\\\n",
+                            expr.to_latex().to_string().trim(),
+                            expr.eval(&self.scope).to_latex().to_string().trim_end(),
+                        )
+                        .as_str(),
                     );
                 }
                 Statement::DecPrintExpr { lhs, rhs } => {
                     let val = rhs.eval(&self.scope);
-                    println!(
-                        "${} = {} = {}$\\newline",
-                        lhs.trim(),
-                        rhs.to_latex().to_string().trim_end(),
-                        val.to_latex().to_string().trim_end(),
+                    self.output.push_str(
+                        format!(
+                            "${} = {} = {}$\\\\\n",
+                            lhs.trim(),
+                            rhs.to_latex().to_string().trim_end(),
+                            val.to_latex().to_string().trim_end(),
+                        )
+                        .as_str(),
                     );
                     self.scope.variables.insert(lhs.clone(), val);
                 }
             }
         }
+        self.output.push_str("\\end{document}")
     }
 }
