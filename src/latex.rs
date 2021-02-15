@@ -50,6 +50,11 @@ impl ToLaTeX for Expr {
                     a.to_latex().to_string(),
                     b.to_latex().to_string()
                 )),
+                (Op::Exp, [a, b, ..]) => LaTeX::Math(format!(
+                    "{}^{{{}}}",
+                    a.to_latex().to_string(),
+                    b.to_latex().to_string()
+                )),
                 (Op::AddUnit(u), [v]) => LaTeX::Math(format!(
                     "{} {}",
                     v.to_latex().to_string(),

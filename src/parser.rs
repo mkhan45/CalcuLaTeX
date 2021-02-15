@@ -76,6 +76,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         "-" => Op::Minus,
                         "*" => Op::Mul,
                         "/" => Op::Div,
+                        "^" => Op::Exp,
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
                     Rule::unit_expr => Op::AddUnit(parse_unit_expr(nx).eval()),
@@ -109,7 +110,6 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
         }
     }
 
-    dbg!(r.clone());
     expr_bp(&mut r.into_inner(), 0)
 }
 
@@ -124,6 +124,7 @@ fn infix_binding_power(op: &Op) -> (u8, u8) {
     match op {
         Op::Plus | Op::Minus => (1, 2),
         Op::Mul | Op::Div => (3, 4),
+        Op::Exp => (5, 6),
         _ => panic!(),
     }
 }

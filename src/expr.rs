@@ -45,6 +45,7 @@ impl Expr {
                 (Op::Minus, [a, b]) => e(a) - e(b),
                 (Op::Mul, [a, b]) => e(a) * e(b),
                 (Op::Div, [a, b]) => e(a) / e(b),
+                (Op::Exp, [a, b]) => e(a).pow(&e(b)),
                 (Op::AddUnit(u), [v]) => e(v).with_unit(&u),
                 (Op::AddMultiUnit(pow, u), [v]) => (e(v)
                     * Val {
@@ -64,6 +65,7 @@ pub enum Op {
     Minus,
     Mul,
     Div,
+    Exp,
     AddUnit(Unit),
     AddMultiUnit(i8, Unit),
 }
