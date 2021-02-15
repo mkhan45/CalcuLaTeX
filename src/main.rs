@@ -89,8 +89,6 @@ fn main() {
                 pandoc.set_input_format(pandoc::InputFormat::Latex, Vec::new());
                 pandoc.add_input(&md_file.path());
 
-                // pandoc.add_option(pandoc::PandocOption::PdfEngine("tectonic".into()));
-
                 pandoc.set_output(pandoc::OutputKind::File(args[2].to_string().into()));
                 pandoc.execute().unwrap();
                 println!("done rebuilding pdf");
