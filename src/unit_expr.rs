@@ -13,6 +13,7 @@ pub enum UnitOp {
     Exp(i8),
 }
 
+#[derive(Clone, Debug)]
 pub struct UnitPow {
     pub unit: Unit,
     pub pow: i8,

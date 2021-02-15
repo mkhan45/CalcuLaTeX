@@ -1,7 +1,11 @@
+use crate::parser::parse_unit_expr;
+use std::convert::TryFrom;
+
 use crate::expr::unit::BaseUnit;
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
 use crate::expr::{unit::Unit, val::Val, Expr, Op};
+use crate::unit_expr::UnitPow;
 use num::rational::Ratio;
 use num::One;
 use num::Signed;
@@ -12,8 +16,16 @@ pub enum LaTeX {
     Math(String),
 }
 
+#[derive(Debug)]
+pub enum FormatArgs {
+    UnitHint { string: String, value: UnitPow },
+}
+
 pub trait ToLaTeX {
-    fn to_latex(&self) -> LaTeX;
+    fn to_latex_ext(&self, args: Option<&FormatArgs>) -> LaTeX;
+    fn to_latex(&self) -> LaTeX {
+        self.to_latex_ext(None)
+    }
 }
 
 impl ToString for LaTeX {
@@ -26,7 +38,7 @@ impl ToString for LaTeX {
 }
 
 impl ToLaTeX for Expr {
-    fn to_latex(&self) -> LaTeX {
+    fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
         match self {
             Expr::Atom(v) => LaTeX::Math(v.to_string()),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
@@ -69,19 +81,36 @@ impl ToLaTeX for Expr {
 }
 
 impl ToLaTeX for Val {
-    fn to_latex(&self) -> LaTeX {
-        let unit_str = self.unit.to_latex().to_string();
-        let out = if !unit_str.is_empty() {
-            format!("{} \\ {}", self.num, unit_str)
-        } else {
-            self.num.to_string()
-        };
-        LaTeX::Math(out.trim().to_string())
+    fn to_latex_ext(&self, args: Option<&FormatArgs>) -> LaTeX {
+        match args {
+            Some(FormatArgs::UnitHint {
+                string,
+                value: UnitPow { unit, pow },
+            }) if unit == &self.unit => {
+                let out = format!("{} \\ {}", self.num / 10f64.powi(*pow as i32), string);
+                LaTeX::Math(out.trim().to_string())
+            }
+            Some(FormatArgs::UnitHint { string, .. }) => {
+                panic!(
+                    "Unit hint {} does not value with unit {}",
+                    string, self.unit
+                )
+            }
+            None => {
+                let unit_str = self.unit.to_latex().to_string();
+                let out = if !unit_str.is_empty() {
+                    format!("{} \\ {}", self.num, unit_str)
+                } else {
+                    self.num.to_string()
+                };
+                LaTeX::Math(out.trim().to_string())
+            }
+        }
     }
 }
 
 impl ToLaTeX for Unit {
-    fn to_latex(&self) -> LaTeX {
+    fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
         match self {
             Unit::Base(arr) => {
                 let mut numerator = Vec::new();

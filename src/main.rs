@@ -39,23 +39,23 @@ mod tests {
         assert_eq!(full_eval("5 - 3").to_string(), "2".to_string());
         assert_eq!(
             full_eval("5 grams - 4 grams").to_string(),
-            "1 gm".to_string()
+            "1 g".to_string()
         );
         assert_eq!(
             full_eval("5 grams + 4 grams").to_string(),
-            "9 gm".to_string()
+            "9 g".to_string()
         );
         assert_eq!(
             full_eval("5 kilograms + 4 grams").to_string(),
-            "5004 gm".to_string()
+            "5004 g".to_string()
         );
         assert_eq!(
             full_eval("5 meters * 4 grams").to_string(),
-            "20 m gm".to_string()
+            "20 m g".to_string()
         );
         assert_eq!(
             full_eval("5 meters / 4 grams").to_string(),
-            "1.25 m gm^-1".to_string()
+            "1.25 m g^-1".to_string()
         );
     }
 }

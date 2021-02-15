@@ -1,5 +1,5 @@
-m = 5 gm
+m = 5 kg
 c = 4.184 J / gm / K
 dT = 4 K
 
-m * c * dT = ?
+m * c * dT = ? J

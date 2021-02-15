@@ -1,3 +1,6 @@
+use crate::expr::unit::Unit;
+use crate::latex::FormatArgs;
+use crate::unit_expr::UnitPow;
 use std::collections::BTreeMap;
 
 use crate::{expr::Expr, latex::ToLaTeX};
@@ -11,9 +14,19 @@ pub struct Scope {
 #[derive(Debug)]
 pub enum Statement {
     ExprStmt(Expr),
-    VarDec { lhs: String, rhs: Expr },
-    PrintExpr(Expr),
-    DecPrintExpr { lhs: String, rhs: Expr },
+    VarDec {
+        lhs: String,
+        rhs: Expr,
+    },
+    PrintExpr {
+        expr: Expr,
+        unit_hint: Option<FormatArgs>,
+    },
+    DecPrintExpr {
+        lhs: String,
+        rhs: Expr,
+        unit_hint: Option<FormatArgs>,
+    },
 }
 
 #[derive(Default)]
@@ -53,24 +66,31 @@ impl State {
                         .variables
                         .insert(lhs.clone(), rhs.eval(&self.scope));
                 }
-                Statement::PrintExpr(expr) => {
+                Statement::PrintExpr { expr, unit_hint } => {
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
                             expr.to_latex().to_string().trim(),
-                            expr.eval(&self.scope).to_latex().to_string().trim_end(),
+                            expr.eval(&self.scope)
+                                .to_latex_ext(unit_hint.as_ref())
+                                .to_string()
+                                .trim_end(),
                         )
                         .as_str(),
                     );
                 }
-                Statement::DecPrintExpr { lhs, rhs } => {
+                Statement::DecPrintExpr {
+                    lhs,
+                    rhs,
+                    unit_hint,
+                } => {
                     let val = rhs.eval(&self.scope);
                     self.output.push_str(
                         format!(
                             "${} = {} = {}$\\\\\n",
                             lhs.trim(),
                             rhs.to_latex().to_string().trim_end(),
-                            val.to_latex().to_string().trim_end(),
+                            val.to_latex_ext(unit_hint.as_ref()).to_string().trim_end(),
                         )
                         .as_str(),
                     );

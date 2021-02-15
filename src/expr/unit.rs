@@ -70,7 +70,7 @@ impl ToString for BaseUnit {
     fn to_string(&self) -> String {
         match self {
             BaseUnit::Meter => "m",
-            BaseUnit::Gram => "gm",
+            BaseUnit::Gram => "g",
             BaseUnit::Second => "s",
             BaseUnit::Ampere => "A",
             BaseUnit::Kelvin => "K",
@@ -130,7 +130,7 @@ impl std::convert::TryFrom<&str> for Unit {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         Ok(match s.trim() {
             "meters" | "meter" | "m" => BaseUnit::Meter.into(),
-            "grams" | "gram" | "gm" => BaseUnit::Gram.into(),
+            "grams" | "gram" | "g" | "gm" => BaseUnit::Gram.into(),
             "second" | "seconds" | "s" => BaseUnit::Second.into(),
             "amp" | "amps" | "ampere" | "amperes" => BaseUnit::Ampere.into(),
             "kelvin" | "K" => BaseUnit::Kelvin.into(),
@@ -209,7 +209,7 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
-        assert_eq!(format!("{}", u).as_str(), "m gm");
+        assert_eq!(format!("{}", u).as_str(), "m g");
 
         let u = Unit::Base([
             Ratio::one(),
@@ -220,7 +220,7 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
-        assert_eq!(format!("{}", u).as_str(), "m gm^2 s^-1");
+        assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
     }
 }
 

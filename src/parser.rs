@@ -17,6 +17,8 @@ use crate::{
     expr::{Expr, Op},
 };
 
+use crate::latex::FormatArgs;
+
 #[derive(Parser)]
 #[grammar = "parser/grammar.pest"]
 pub struct MathParser;
@@ -215,7 +217,18 @@ fn parse_print_stmt(r: Pair<Rule>) -> Statement {
     assert_eq!(r.as_rule(), Rule::print_expr);
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
-    Statement::PrintExpr(parse_expr(lhs))
+    let unit_hint = inner.next().map(|n| {
+        let s = n.as_str();
+        FormatArgs::UnitHint {
+            value: parse_unit_expr(n).eval(),
+            string: s.to_string(),
+        }
+    });
+
+    Statement::PrintExpr {
+        expr: parse_expr(lhs),
+        unit_hint,
+    }
 }
 
 fn parse_dec_print_stmt(r: Pair<Rule>) -> Statement {
@@ -223,9 +236,18 @@ fn parse_dec_print_stmt(r: Pair<Rule>) -> Statement {
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
     let rhs = inner.next().unwrap();
+    let unit_hint = inner.next().map(|n| {
+        let s = n.as_str();
+        FormatArgs::UnitHint {
+            value: parse_unit_expr(n).eval(),
+            string: s.to_string(),
+        }
+    });
+
     Statement::DecPrintExpr {
         lhs: lhs.as_str().to_string(),
         rhs: parse_expr(rhs),
+        unit_hint,
     }
 }
 
