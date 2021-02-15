@@ -1,7 +1,9 @@
+use crate::expr::unit::BaseUnit;
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::{unit::Unit, val::Val, Expr, Op};
 use num::rational::Ratio;
 use num::One;
+use num::Signed;
 use num::Zero;
 
 pub enum LaTeX {
@@ -53,12 +55,6 @@ impl ToLaTeX for Expr {
                     v.to_latex().to_string(),
                     u.to_latex().to_string()
                 )),
-                (Op::AddMultiUnit(p, u), [v]) => LaTeX::Math(format!(
-                    "{} {} \\times 10^{{{}}}",
-                    v.to_latex().to_string(),
-                    u.to_latex().to_string(),
-                    p.to_string(),
-                )),
                 _ => todo!(),
             },
         }
@@ -81,15 +77,42 @@ impl ToLaTeX for Unit {
     fn to_latex(&self) -> LaTeX {
         match self {
             Unit::Base(arr) => {
-                let res =
-                    arr.iter()
-                        .zip(BASE_UNITS.iter())
-                        .fold("".to_string(), |acc, (pow, unit)| match pow {
-                            r if r == &Ratio::zero() => acc,
-                            r if r == &Ratio::one() => format!("{} {}", acc, unit.to_string()),
-                            _ => format!("{} {}^{{{}}}", acc, unit.to_string(), pow),
-                        });
-                LaTeX::Math(res.trim().to_string())
+                let mut numerator = Vec::new();
+                let mut denominator = Vec::new();
+                arr.iter().zip(BASE_UNITS.iter()).for_each(|(pow, unit)| {
+                    if pow > &Ratio::zero() {
+                        numerator.push((pow, unit));
+                    } else if pow < &Ratio::zero() {
+                        denominator.push((pow, unit));
+                    }
+                });
+
+                let latexify_single_unit = |(pow, unit): &(&Ratio<i8>, &BaseUnit)| {
+                    if pow.abs() == Ratio::one() {
+                        format!("{}", unit.to_string())
+                    } else {
+                        format!("{}^{{{}}}", unit.to_string(), pow.abs())
+                    }
+                };
+
+                let numerator_string = numerator.iter().fold("".to_string(), |acc, unit_info| {
+                    format!("{} {}", acc, latexify_single_unit(unit_info))
+                });
+                let denominator_string =
+                    denominator.iter().fold("".to_string(), |acc, unit_info| {
+                        format!("{} {}", acc, latexify_single_unit(unit_info))
+                    });
+
+                if numerator_string.is_empty() {
+                    LaTeX::Math(format!("\\frac{{1}}{{{}}}", denominator_string))
+                } else if denominator.is_empty() {
+                    LaTeX::Math(format!("{}", numerator_string))
+                } else {
+                    LaTeX::Math(format!(
+                        "\\frac{{{}}}{{{}}}",
+                        numerator_string, denominator_string
+                    ))
+                }
             }
             Unit::Custom(_map) => {
                 todo!()

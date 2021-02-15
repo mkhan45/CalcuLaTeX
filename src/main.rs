@@ -3,6 +3,8 @@ use pest::Parser;
 mod parser;
 use parser::{parse_expr, MathParser, Rule};
 
+mod unit_expr;
+
 mod expr;
 use expr::val::Val;
 

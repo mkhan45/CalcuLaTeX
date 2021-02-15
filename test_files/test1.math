@@ -1,7 +1,9 @@
 yvel = 10 m/s
-g = 10 m/s/s
+g = 10 m / (s * s)
 
 dt = 10 s
 
+g = ?
+yvel = ?
 h = yvel * dt - ((1/2) * g * dt * dt)
 h = ?

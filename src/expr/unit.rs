@@ -2,6 +2,7 @@
 
 use num::rational::Ratio;
 use num::{One, Zero};
+use std::fmt::Debug;
 
 use std::collections::BTreeMap;
 
@@ -73,10 +74,16 @@ pub const BASE_UNITS: [BaseUnit; 7] = [
     BaseUnit::Candela,
 ];
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum Unit {
     Base([Ratio<i8>; 7]),
     Custom(BTreeMap<String, Ratio<u8>>),
+}
+
+impl Debug for Unit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
 }
 
 impl Unit {
@@ -94,9 +101,11 @@ impl PartialEq for Unit {
     }
 }
 
-impl From<&str> for Unit {
-    fn from(s: &str) -> Self {
-        match s {
+impl std::convert::TryFrom<&str> for Unit {
+    type Error = &'static str;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Ok(match s.trim() {
             "meters" | "meter" | "m" => BaseUnit::Meter.into(),
             "grams" | "gram" | "gm" => BaseUnit::Gram.into(),
             "second" | "seconds" | "s" => BaseUnit::Second.into(),
@@ -104,8 +113,20 @@ impl From<&str> for Unit {
             "kelvin" | "K" => BaseUnit::Kelvin.into(),
             "moles" | "mols" | "mol" | "mole" | "M" => BaseUnit::Mole.into(),
             "candela" => BaseUnit::Candela.into(),
-            _ => todo!(),
-        }
+            "J" | "joules" => Unit::Base([
+                Ratio::from(2),
+                Ratio::one(),
+                Ratio::from(-2),
+                Ratio::zero(),
+                Ratio::zero(),
+                Ratio::zero(),
+                Ratio::zero(),
+            ]),
+            _ => {
+                dbg!(s);
+                return Err("Bad unit");
+            }
+        })
     }
 }
 

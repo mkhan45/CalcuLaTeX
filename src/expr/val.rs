@@ -38,7 +38,7 @@ impl std::ops::Sub<Val> for Val {
                 unit: self.unit,
             }
         } else {
-            panic!("Can't add")
+            panic!(format!("Can't sub {} from {}", rhs, self))
         }
     }
 }
@@ -73,7 +73,10 @@ impl Val {
                 unit: unit.clone(),
             }
         } else {
-            panic!("Cannot add unit")
+            Val {
+                num: self.num,
+                unit: self.unit.clone() * unit.clone(),
+            }
         }
     }
 }

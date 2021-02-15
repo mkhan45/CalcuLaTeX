@@ -1,18 +1,55 @@
+use std::convert::TryInto;
+
 use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use pest_derive::*;
 
-use crate::statement::Statement;
+use crate::{
+    statement::Statement,
+    unit_expr::{UnitExpr, UnitOp},
+};
 
 use crate::{
     expr::unit::{Unit, UNIT_PREFIXES},
     expr::val::Val,
     expr::{Expr, Op},
+    unit_expr,
 };
 
 #[derive(Parser)]
 #[grammar = "parser/grammar.pest"]
 pub struct MathParser;
+
+pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
+    assert_eq!(r.as_rule(), Rule::unit_expr);
+
+    fn expr_recurse(inp: &mut Pairs<Rule>) -> UnitExpr {
+        if let Some(nx) = inp.next() {
+            let lhs = {
+                match nx.as_rule() {
+                    Rule::unit => UnitExpr::Atom(nx.as_str().try_into().unwrap(), 1),
+                    Rule::unit_expr => UnitExpr::Atom(parse_unit_expr(nx).eval(), 1),
+                    _ => unreachable!(),
+                }
+            };
+            if let Some(nx) = inp.next() {
+                let op = match nx.as_str().trim() {
+                    "*" => UnitOp::Mul,
+                    "/" => UnitOp::Div,
+                    _ => panic!(),
+                };
+                let rhs = expr_recurse(inp);
+                UnitExpr::Cons(op, vec![lhs, rhs])
+            } else {
+                lhs
+            }
+        } else {
+            unreachable!()
+        }
+    }
+
+    expr_recurse(&mut r.into_inner())
+}
 
 pub fn parse_expr(r: Pair<Rule>) -> Expr {
     assert_eq!(r.as_rule(), Rule::expression);
@@ -41,22 +78,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         "/" => Op::Div,
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
-                    Rule::unit => {
-                        let token = nx.as_str();
-                        let res = UNIT_PREFIXES.iter().find_map(|(prefix, pow)| {
-                            if let Some(stripped) = token.strip_prefix(prefix) {
-                                Some(Op::AddMultiUnit(*pow, stripped.into()))
-                            } else {
-                                None
-                            }
-                        });
-
-                        if let Some(op) = res {
-                            op
-                        } else {
-                            Op::AddUnit(token.into())
-                        }
-                    }
+                    Rule::unit_expr => Op::AddUnit(parse_unit_expr(nx).eval()),
                     _ => todo!(),
                 };
 
@@ -87,6 +109,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
         }
     }
 
+    dbg!(r.clone());
     expr_bp(&mut r.into_inner(), 0)
 }
 
