@@ -24,7 +24,7 @@ impl std::ops::Mul for UnitPow {
 
     fn mul(self, rhs: Self) -> Self::Output {
         UnitPow {
-            unit: self.unit.clone() * rhs.unit.clone(),
+            unit: self.unit.clone() * rhs.unit,
             pow: self.pow,
         }
     }
@@ -35,7 +35,7 @@ impl std::ops::Div for UnitPow {
 
     fn div(self, rhs: Self) -> Self::Output {
         UnitPow {
-            unit: self.unit.clone() / rhs.unit.clone(),
+            unit: self.unit.clone() / rhs.unit,
             pow: self.pow,
         }
     }

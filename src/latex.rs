@@ -1,6 +1,3 @@
-use crate::parser::parse_unit_expr;
-use std::convert::TryFrom;
-
 use crate::expr::unit::BaseUnit;
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;

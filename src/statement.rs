@@ -1,6 +1,4 @@
-use crate::expr::unit::Unit;
 use crate::latex::FormatArgs;
-use crate::unit_expr::UnitPow;
 use std::collections::BTreeMap;
 
 use crate::{expr::Expr, latex::ToLaTeX};
