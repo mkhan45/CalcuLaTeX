@@ -1,25 +1,24 @@
-use pest::Parser;
-
 use notify::{self, Watcher};
-use pandoc;
-use tempfile;
 
 mod parser;
-use parser::{parse_expr, MathParser, Rule};
-
 mod unit_expr;
 
 mod expr;
 use expr::val::Val;
 
 mod statement;
-use statement::{Scope, State};
+use statement::State;
 
 mod latex;
 
 use std::io::Write;
 
+#[cfg(test)]
 fn full_eval(s: &str) -> Val {
+    use crate::parser::*;
+    use pest::Parser;
+    use statement::Scope;
+
     let scope = Scope::default();
 
     parse_expr(

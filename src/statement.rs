@@ -24,7 +24,7 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(contents: &String) -> Self {
+    pub fn new(contents: &str) -> Self {
         let output = "\\documentclass{article}\n\\begin{document}\n".to_string();
 
         State {

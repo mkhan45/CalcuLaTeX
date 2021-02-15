@@ -85,16 +85,18 @@ impl ToLaTeX for Unit {
                 let mut numerator = Vec::new();
                 let mut denominator = Vec::new();
                 arr.iter().zip(BASE_UNITS.iter()).for_each(|(pow, unit)| {
-                    if pow > &Ratio::zero() {
-                        numerator.push((pow, unit));
-                    } else if pow < &Ratio::zero() {
-                        denominator.push((pow, unit));
+                    use std::cmp::Ordering::*;
+
+                    match pow.cmp(&Ratio::zero()) {
+                        Greater => numerator.push((pow, unit)),
+                        Less => denominator.push((pow, unit)),
+                        _ => {}
                     }
                 });
 
                 let latexify_single_unit = |(pow, unit): &(&Ratio<i8>, &BaseUnit)| {
                     if pow.abs() == Ratio::one() {
-                        format!("{}", unit.to_string())
+                        unit.to_string()
                     } else {
                         format!("{}^{{{}}}", unit.to_string(), pow.abs())
                     }
@@ -111,7 +113,7 @@ impl ToLaTeX for Unit {
                 if numerator_string.is_empty() {
                     LaTeX::Math(format!("\\frac{{1}}{{{}}}", denominator_string))
                 } else if denominator.is_empty() {
-                    LaTeX::Math(format!("{}", numerator_string))
+                    LaTeX::Math(numerator_string)
                 } else {
                     LaTeX::Math(format!(
                         "\\frac{{{}}}{{{}}}",
