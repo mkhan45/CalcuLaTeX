@@ -1,5 +1,6 @@
 use crate::expr::unit::BaseUnit;
 use crate::expr::unit::BASE_UNITS;
+use crate::expr::unit::UNIT_PREFIXES_ABBR;
 use crate::expr::{unit::Unit, val::Val, Expr, Op};
 use num::rational::Ratio;
 use num::One;
@@ -55,10 +56,11 @@ impl ToLaTeX for Expr {
                     a.to_latex().to_string(),
                     b.to_latex().to_string()
                 )),
-                (Op::AddUnit(u), [v]) => LaTeX::Math(format!(
-                    "{} {}",
+                (Op::AddMultiUnit(m, u), [v]) => LaTeX::Math(format!(
+                    "{}\\ {}{}",
                     v.to_latex().to_string(),
-                    u.to_latex().to_string()
+                    UNIT_PREFIXES_ABBR.get_by_right(m).unwrap_or(&""),
+                    u.to_latex().to_string(),
                 )),
                 _ => todo!(),
             },

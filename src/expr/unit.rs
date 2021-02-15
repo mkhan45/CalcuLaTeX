@@ -6,13 +6,30 @@ use std::fmt::Debug;
 
 use std::collections::BTreeMap;
 
-pub const UNIT_PREFIXES: [(&str, i8); 5] = [
-    ("centi", -2),
-    ("deci", -1),
-    ("deca", 1),
-    ("hecto", 2),
-    ("kilo", 3),
-];
+use bimap::BiMap;
+
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref UNIT_PREFIXES: BiMap<&'static str, i8> = {
+        let mut m = BiMap::new();
+        m.insert("centi", -2);
+        m.insert("deci", -1);
+        m.insert("deca", 1);
+        m.insert("hecto", 2);
+        m.insert("kilo", 3);
+        m
+    };
+    pub static ref UNIT_PREFIXES_ABBR: BiMap<&'static str, i8> = {
+        let mut m = BiMap::new();
+        m.insert("c", -2);
+        m.insert("d", -1);
+        m.insert("de", 1);
+        m.insert("h", 2);
+        m.insert("k", 3);
+        m
+    };
+}
 
 // enum UnitType {
 //     Length,

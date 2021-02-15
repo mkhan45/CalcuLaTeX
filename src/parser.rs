@@ -1,3 +1,5 @@
+use crate::expr::unit::UNIT_PREFIXES_ABBR;
+use crate::unit_expr::UnitPow;
 use std::convert::TryInto;
 
 use pest::iterators::{Pair, Pairs};
@@ -13,7 +15,6 @@ use crate::{
     expr::unit::{Unit, UNIT_PREFIXES},
     expr::val::Val,
     expr::{Expr, Op},
-    unit_expr,
 };
 
 #[derive(Parser)]
@@ -27,8 +28,33 @@ pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
         if let Some(nx) = inp.next() {
             let mut lhs = {
                 match nx.as_rule() {
-                    Rule::unit => UnitExpr::Atom(nx.as_str().try_into().unwrap(), 1),
-                    Rule::unit_expr => UnitExpr::Atom(parse_unit_expr(nx).eval(), 1),
+                    Rule::unit => {
+                        let rule_str = nx.as_str();
+                        let mut res = UNIT_PREFIXES.iter().find_map(|(prefix, pow)| {
+                            if let Some(stripped) = rule_str.strip_prefix(prefix) {
+                                Some((stripped, pow))
+                            } else {
+                                None
+                            }
+                        });
+
+                        if res == None {
+                            res = UNIT_PREFIXES_ABBR.iter().find_map(|(prefix, pow)| {
+                                if let Some(stripped) = rule_str.strip_prefix(prefix) {
+                                    Some((stripped, pow))
+                                } else {
+                                    None
+                                }
+                            });
+                        }
+
+                        let (stripped, pow) = res.unwrap_or((rule_str, &0));
+                        UnitExpr::Atom(stripped.try_into().unwrap(), *pow)
+                    }
+                    Rule::unit_expr => {
+                        let UnitPow { unit, pow } = parse_unit_expr(nx).eval();
+                        UnitExpr::Atom(unit, pow)
+                    }
                     _ => unreachable!(),
                 }
             };
@@ -107,7 +133,10 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         "^" => Op::Exp,
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
-                    Rule::unit_expr => Op::AddUnit(parse_unit_expr(nx).eval()),
+                    Rule::unit_expr => {
+                        let UnitPow { unit, pow } = parse_unit_expr(nx).eval();
+                        Op::AddMultiUnit(pow, unit)
+                    }
                     _ => todo!(),
                 };
 
@@ -143,7 +172,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
 
 fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
     Some(match op {
-        Op::AddUnit(_) | Op::AddMultiUnit(_, _) => (9, ()),
+        Op::AddMultiUnit(_, _) => (9, ()),
         _ => return None,
     })
 }
