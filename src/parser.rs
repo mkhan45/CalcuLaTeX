@@ -23,32 +23,60 @@ pub struct MathParser;
 pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
     assert_eq!(r.as_rule(), Rule::unit_expr);
 
-    fn expr_recurse(inp: &mut Pairs<Rule>) -> UnitExpr {
+    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> UnitExpr {
         if let Some(nx) = inp.next() {
-            let lhs = {
+            let mut lhs = {
                 match nx.as_rule() {
                     Rule::unit => UnitExpr::Atom(nx.as_str().try_into().unwrap(), 1),
                     Rule::unit_expr => UnitExpr::Atom(parse_unit_expr(nx).eval(), 1),
                     _ => unreachable!(),
                 }
             };
-            if let Some(nx) = inp.next() {
+
+            while let Some(nx) = inp.peek() {
                 let op = match nx.as_str().trim() {
                     "*" => UnitOp::Mul,
                     "/" => UnitOp::Div,
-                    _ => panic!(),
+                    s if s.starts_with('^') => {
+                        let n = s.strip_prefix('^').unwrap();
+                        UnitOp::Exp(n.parse().unwrap())
+                    }
+                    _ => {
+                        dbg!(nx);
+                        panic!();
+                    }
                 };
-                let rhs = expr_recurse(inp);
-                UnitExpr::Cons(op, vec![lhs, rhs])
-            } else {
-                lhs
+
+                if let Some((l_bp, ())) = unit_postfix_binding_power(&op) {
+                    if l_bp < bp {
+                        break;
+                    }
+
+                    inp.next();
+                    lhs = UnitExpr::Cons(op, vec![lhs]);
+
+                    continue;
+                }
+
+                let (l_bp, r_bp) = unit_infix_binding_power(&op);
+                if l_bp < bp {
+                    break;
+                }
+                inp.next();
+
+                let rhs = expr_bp(inp, r_bp);
+                lhs = UnitExpr::Cons(op, vec![lhs, rhs]);
+
+                continue;
             }
+
+            lhs
         } else {
             unreachable!()
         }
     }
 
-    expr_recurse(&mut r.into_inner())
+    expr_bp(&mut r.into_inner(), 0)
 }
 
 pub fn parse_expr(r: Pair<Rule>) -> Expr {
@@ -118,6 +146,20 @@ fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
         Op::AddUnit(_) | Op::AddMultiUnit(_, _) => (9, ()),
         _ => return None,
     })
+}
+
+fn unit_postfix_binding_power(op: &UnitOp) -> Option<(u8, ())> {
+    Some(match op {
+        UnitOp::Exp(_) => (3, ()),
+        _ => return None,
+    })
+}
+
+fn unit_infix_binding_power(op: &UnitOp) -> (u8, u8) {
+    match op {
+        UnitOp::Mul | UnitOp::Div => (1, 2),
+        _ => panic!(),
+    }
 }
 
 fn infix_binding_power(op: &Op) -> (u8, u8) {

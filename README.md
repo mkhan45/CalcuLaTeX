@@ -3,11 +3,8 @@ pretty printing calculator language
 
 Kind of like smart LaTeX
 
-<<<<<<< HEAD
-=======
 needs a better name
 
->>>>>>> 6086c1b4218d01008b4fa8b1b23fd191030fc859
 ## Example
 
 ```

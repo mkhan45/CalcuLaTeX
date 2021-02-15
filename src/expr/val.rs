@@ -82,9 +82,8 @@ impl Val {
 
     pub fn pow(&self, rhs: &Val) -> Val {
         if rhs.unit == Unit::empty() && rhs.num.fract() == 0.0 {
-            let mut unit = self.unit.clone();
-            let pow = rhs.num as i32;
-            (0..pow - 1).for_each(|_| unit = unit.clone() * unit.clone());
+            let pow = rhs.num as i8;
+            let unit = self.unit.pow(pow);
             Val {
                 num: self.num.powi(rhs.num as i32),
                 unit,

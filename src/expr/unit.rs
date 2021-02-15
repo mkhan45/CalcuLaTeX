@@ -90,6 +90,12 @@ impl Unit {
     pub fn empty() -> Self {
         Unit::Base([Ratio::zero(); 7])
     }
+
+    pub fn pow(&self, rhs: i8) -> Self {
+        let mut ret = self.clone();
+        (0..rhs - 1).for_each(|_| ret = ret.clone() * self.clone());
+        ret
+    }
 }
 
 impl PartialEq for Unit {
