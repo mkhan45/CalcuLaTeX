@@ -144,9 +144,17 @@ fn parse_print_stmt(r: Pair<Rule>) -> Statement {
     assert_eq!(r.as_rule(), Rule::print_expr);
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
-    Statement::PrintExpr {
-        string: lhs.as_str().to_string(),
-        parsed: parse_expr(lhs),
+    Statement::PrintExpr(parse_expr(lhs))
+}
+
+fn parse_dec_print_stmt(r: Pair<Rule>) -> Statement {
+    assert_eq!(r.as_rule(), Rule::dec_print_expr);
+    let mut inner = r.into_inner();
+    let lhs = inner.next().unwrap();
+    let rhs = inner.next().unwrap();
+    Statement::DecPrintExpr {
+        lhs: lhs.as_str().to_string(),
+        rhs: parse_expr(rhs),
     }
 }
 
@@ -155,12 +163,10 @@ pub fn parse_block(s: &str) -> Vec<Statement> {
     inp.map(|s| {
         let stmt = s.into_inner().next().unwrap();
         match stmt.as_rule() {
-            Rule::expression => Statement::ExprStmt {
-                string: stmt.as_str().to_string(),
-                parsed: parse_expr(stmt),
-            },
+            Rule::expression => Statement::ExprStmt(parse_expr(stmt)),
             Rule::var_dec => parse_var_dec(stmt),
             Rule::print_expr => parse_print_stmt(stmt),
+            Rule::dec_print_expr => parse_dec_print_stmt(stmt),
             _ => unreachable!(),
         }
     })

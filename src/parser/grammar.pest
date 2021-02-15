@@ -18,9 +18,10 @@ operation = @{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
-statement = { print_expr | var_dec | expression }
+statement = { dec_print_expr | print_expr | var_dec | expression }
     var_dec = { ident ~ "=" ~ expression }
     print_expr = { expression ~ "=" ~ "?" }
+    dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" }
 
 program = _{ "\n"* ~ statement ~ ("\n" ~ program)* }
 
