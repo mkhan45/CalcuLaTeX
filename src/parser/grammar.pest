@@ -1,11 +1,15 @@
-number = @{ ASCII_DIGIT+ }
+number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
 ident = @{ ASCII_ALPHA ~ ASCII_ALPHANUMERIC* }
 
-expression = { term ~ (operation ~ term)* }
-    term = _{ paren_expr | (ident | number) ~ unit* }
-    paren_expr = _{"(" ~ expression ~ ")"}
+unit_expr = { unit_term ~ (unit_operation ~ unit_term)* }
+    unit_operation = { "*" | "/" }
+    unit = { ASCII_ALPHA+ }
+    unit_term = _{ paren_unit_expr | unit ~ unit_expr* }
+    paren_unit_expr = _{ "(" ~ unit_expr ~ ")" }
 
-unit = @{ ASCII_ALPHA+ }
+expression = { term ~ (operation ~ term)* }
+    term = _{ paren_expr | (ident | number | unit_expr ) ~ unit_expr* }
+    paren_expr = _{"(" ~ expression ~ ")"}
 
 operation = @{ add | subtract | multiply | divide | power }
     add      = { "+" }

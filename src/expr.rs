@@ -1,4 +1,6 @@
 pub mod val;
+use std::convert::TryInto;
+
 use val::*;
 
 pub mod unit;
@@ -34,7 +36,7 @@ impl Expr {
                 } else {
                     Val {
                         num: 1.0,
-                        unit: n.as_str().into(),
+                        unit: n.as_str().try_into().unwrap(),
                     }
                 }
             }
