@@ -35,7 +35,7 @@ impl Expr {
                     v.clone()
                 } else {
                     Val {
-                        num: 1.0,
+                        num: rug::Rational::from(1),
                         unit: n.as_str().try_into().unwrap(),
                     }
                 }

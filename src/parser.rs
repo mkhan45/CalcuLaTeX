@@ -31,7 +31,7 @@ pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
                     Rule::unit => {
                         let rule_str = nx.as_str();
                         let unit: Unit = rule_str.try_into().unwrap();
-                        UnitExpr::Atom(rule_str.try_into().unwrap())
+                        UnitExpr::Atom(unit)
                     }
                     Rule::unit_expr => {
                         let unit = parse_unit_expr(nx).eval();
@@ -95,7 +95,8 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
             let mut lhs = match nx.as_rule() {
                 Rule::number => Expr::Atom(Val {
                     unit: Unit::empty(),
-                    num: nx.as_str().trim().parse().unwrap(),
+                    num: rug::Rational::from_f64(nx.as_str().trim().parse::<f64>().unwrap())
+                        .unwrap(),
                 }),
                 Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
                 Rule::expression => parse_expr(nx),

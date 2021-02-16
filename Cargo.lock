@@ -7,6 +7,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
+name = "az"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d84e1d907bfc5795a6addb95ef8666141ee73c8f2f5250ff2a46bf4e4f4aec8a"
+
+[[package]]
 name = "bimap"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -152,6 +158,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "gmp-mpfr-sys"
+version = "1.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6e8813402282ac06d031b2b036998940ddcffa3100c722663cd8a1ac98b0bd8"
+dependencies = [
+ "libc",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "inotify"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -243,6 +259,7 @@ dependencies = [
  "pandoc",
  "pest",
  "pest_derive",
+ "rug",
  "tempfile",
 ]
 
@@ -532,6 +549,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
 dependencies = [
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "rug"
+version = "1.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e538d00da450a8e48aac7e6322e67b2dc86ec71a1feeac0e3954c4f07f01bc45"
+dependencies = [
+ "az",
+ "gmp-mpfr-sys",
+ "libc",
 ]
 
 [[package]]

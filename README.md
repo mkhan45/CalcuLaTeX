@@ -16,7 +16,6 @@ dt_{force} = 0.5 s
 y_{vel} = F_0 / mass * dt_{force} = ?
 
 g = 9.81 m/s^2
-
 dt_{air} = 10 s
 
 h = y_{vel} * dt_{air} - ((1/2) * g * dt_{air}^2) = ?
@@ -25,3 +24,7 @@ h = y_{vel} * dt_{air} - ((1/2) * g * dt_{air}^2) = ?
 Outputs:
 
 ![example 1](images/ex1.png)
+
+## Compiling:
+
+Requires GMP, MPFR, and MPC development libraries: <https://docs.rs/gmp-mpfr-sys/1.4.3/gmp_mpfr_sys/index.html>

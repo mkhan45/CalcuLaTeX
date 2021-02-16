@@ -103,7 +103,7 @@ pub enum UnitDesc {
 pub struct Unit {
     pub desc: UnitDesc,
     pub exp: i8,
-    pub mult: f64,
+    pub mult: rug::Rational,
 }
 
 impl Default for Unit {
@@ -111,7 +111,7 @@ impl Default for Unit {
         Unit {
             desc: UnitDesc::Base([Ratio::zero(); 7]),
             exp: 0,
-            mult: 1.0,
+            mult: rug::Rational::from(1),
         }
     }
 }
@@ -127,7 +127,7 @@ impl Unit {
         Unit {
             desc: UnitDesc::Base([Ratio::zero(); 7]),
             exp: 0,
-            mult: 1.0,
+            mult: rug::Rational::from(1),
         }
     }
 
@@ -186,7 +186,7 @@ impl std::convert::TryFrom<&str> for Unit {
                         Ratio::zero(),
                     ]),
                     exp: 0,
-                    mult: 1.0,
+                    mult: rug::Rational::from(1),
                 },
                 "N" | "newton" => Unit {
                     desc: UnitDesc::Base([
@@ -199,7 +199,7 @@ impl std::convert::TryFrom<&str> for Unit {
                         Ratio::zero(),
                     ]),
                     exp: 3,
-                    mult: 1.0,
+                    mult: rug::Rational::from(1),
                 },
                 "minute" | "min" => Unit {
                     desc: UnitDesc::Base([
@@ -212,7 +212,7 @@ impl std::convert::TryFrom<&str> for Unit {
                         Ratio::zero(),
                     ]),
                     exp: 0,
-                    mult: 60.0,
+                    mult: rug::Rational::from(60),
                 },
                 "hour" | "hours" => Unit {
                     desc: UnitDesc::Base([
@@ -225,7 +225,7 @@ impl std::convert::TryFrom<&str> for Unit {
                         Ratio::zero(),
                     ]),
                     exp: 0,
-                    mult: 60.0 * 60.0,
+                    mult: rug::Rational::from(60 * 60),
                 },
                 "day" | "days" => Unit {
                     desc: UnitDesc::Base([
@@ -238,7 +238,7 @@ impl std::convert::TryFrom<&str> for Unit {
                         Ratio::zero(),
                     ]),
                     exp: 0,
-                    mult: 60.0 * 60.0 * 24.0,
+                    mult: rug::Rational::from(60 * 60 * 24),
                 },
                 "year" | "years" => Unit {
                     desc: UnitDesc::Base([
@@ -251,7 +251,7 @@ impl std::convert::TryFrom<&str> for Unit {
                         Ratio::zero(),
                     ]),
                     exp: 0,
-                    mult: 60.0 * 60.0 * 24.0 * 365.0,
+                    mult: rug::Rational::from(60 * 60 * 24 * 365),
                 },
                 _ => {
                     dbg!(s);
@@ -285,7 +285,7 @@ impl From<BaseUnit> for Unit {
         Unit {
             desc,
             exp: 0,
-            mult: 1.0,
+            mult: rug::Rational::from(1),
         }
     }
 }

@@ -1,8 +1,12 @@
+use std::convert::TryFrom;
+
 use super::unit::Unit;
+
+use rug::{self, ops::Pow};
 
 #[derive(Debug, Clone)]
 pub struct Val {
-    pub num: f64,
+    pub num: rug::Rational,
     pub unit: Unit,
 }
 
@@ -19,7 +23,8 @@ impl std::ops::Add<Val> for Val {
     fn add(self, rhs: Val) -> Self::Output {
         if self.unit == rhs.unit {
             Val {
-                num: self.num + rhs.num * rhs.unit.mult * 10f64.powi(rhs.unit.exp as i32),
+                num: self.num
+                    + rhs.num * rhs.unit.mult * rug::Rational::from(10i32.pow(rhs.unit.exp as u32)),
                 unit: self.unit,
             }
         } else {
@@ -34,11 +39,11 @@ impl std::ops::Sub<Val> for Val {
     fn sub(self, rhs: Val) -> Self::Output {
         if self.unit == rhs.unit {
             Val {
-                num: self.num - rhs.num * rhs.unit.mult * 10f64.powi(rhs.unit.exp as i32),
+                num: self.num - rhs.num * rhs.unit.mult * 10i32.pow(rhs.unit.exp as u32),
                 unit: self.unit,
             }
         } else {
-            panic!(format!("Can't sub {} from {}", rhs, self))
+            std::panic::panic_any(format!("Can't sub {} from {}", rhs, self));
         }
     }
 }
@@ -69,7 +74,7 @@ impl Val {
     pub fn with_unit(&self, unit: &Unit) -> Val {
         if self.unit == Unit::empty() {
             Val {
-                num: self.num * unit.mult * 10f64.powi(unit.exp as i32),
+                num: rug::Rational::from(&self.num * &unit.mult) * 10i32.pow(unit.exp as u32),
                 unit: Unit {
                     desc: unit.desc.clone(),
                     ..Default::default()
@@ -77,7 +82,8 @@ impl Val {
             }
         } else {
             Val {
-                num: self.num * unit.mult * 10f64.powi(unit.exp as i32),
+                num: rug::Rational::from(&self.num * &unit.mult)
+                    * rug::Rational::from(10i32.pow(unit.exp as u32)),
                 unit: Unit {
                     desc: (self.unit.clone() * unit.clone()).desc,
                     ..Default::default()
@@ -87,11 +93,12 @@ impl Val {
     }
 
     pub fn pow(&self, rhs: &Val) -> Val {
-        if rhs.unit == Unit::empty() || rhs.num.fract() == 0.0 {
-            let pow = rhs.num as i8;
+        let p = rhs.num.to_f64();
+        if rhs.unit == Unit::empty() || p.fract() == 0.0 {
+            let pow = p as i8;
             let unit = self.unit.pow(pow);
             Val {
-                num: self.num.powf(rhs.num),
+                num: rug::Rational::try_from((&self.num.to_f64()).pow(p as f64)).unwrap(),
                 unit,
             }
         } else {
