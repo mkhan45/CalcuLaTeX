@@ -1,4 +1,4 @@
-number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
+number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
 ident = @{ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_" | "{" | "}" )* }
 
 unit_expr = { unit_term ~ (unit_operation ~ unit_term)* }
