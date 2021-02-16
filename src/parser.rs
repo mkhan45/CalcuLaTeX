@@ -156,7 +156,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
 
 fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
     Some(match op {
-        Op::AddUnit(_, _) => (9, ()),
+        Op::AddUnit(_, _) => (6, ()),
         _ => return None,
     })
 }
@@ -179,7 +179,7 @@ fn infix_binding_power(op: &Op) -> (u8, u8) {
     match op {
         Op::Plus | Op::Minus => (1, 2),
         Op::Mul | Op::Div => (3, 4),
-        Op::Exp => (5, 6),
+        Op::Exp => (7, 8),
         _ => panic!(),
     }
 }

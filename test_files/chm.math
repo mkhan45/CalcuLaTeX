@@ -1,13 +1,11 @@
 ln2 = 0.693
 
-ln2 = ?
-10^9 * year = ?
 k = ln2 / (4.47 * 10^9 * 1 year) = ?
 
 e = 2.71828
 
-hl = 4.47 year * 10^9
-t_{est} = 3.8 year * 10^9
+hl = 4.47 * 10^9 years
+t_{est} = 3.8 * 10^9 years
 
 ntn0 = 1 / (e^(k * t_{est})) = ?
 
