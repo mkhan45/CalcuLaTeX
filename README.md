@@ -8,17 +8,18 @@ needs a better name
 ## Example
 
 ```
-y_{vel} = 10 m/s
-g = 10 m / (s * s)
+mass = 10 kg
 
-dt = 10 s
+F_0 = 1000 N = ?
+dt_{force} = 0.5 s
 
-g = ?
-dt^2 = ?
+y_{vel} = F_0 / mass * dt_{force} = ?
 
-y_{vel} = ?
-h = y_{vel} * dt - ((1/2) * g * dt^2)
-h = ?
+g = 9.81 m/s^2
+
+dt_{air} = 10 s
+
+h = y_{vel} * dt_{air} - ((1/2) * g * dt_{air}^2) = ?
 ```
 
 Outputs:

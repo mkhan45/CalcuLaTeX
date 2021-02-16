@@ -152,16 +152,20 @@ impl std::convert::TryFrom<&str> for Unit {
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         Ok({
-            let (stripped, exp) = UNIT_PREFIXES
-                .iter()
-                .chain(UNIT_PREFIXES_ABBR.iter())
-                .filter(|(p, _)| !p.is_empty())
-                .find_map(|(prefix, exp)| {
-                    s.trim()
-                        .strip_prefix(prefix)
-                        .map(|stripped| (stripped, exp))
-                })
-                .unwrap_or((s.trim(), &0));
+            let (stripped, exp) = if !matches!(s, "day" | "days" | "hours" | "hour") {
+                UNIT_PREFIXES
+                    .iter()
+                    .chain(UNIT_PREFIXES_ABBR.iter())
+                    .filter(|(p, _)| !p.is_empty())
+                    .find_map(|(prefix, exp)| {
+                        s.trim()
+                            .strip_prefix(prefix)
+                            .map(|stripped| (stripped, exp))
+                    })
+                    .unwrap_or((s.trim(), &0))
+            } else {
+                (s, &0i8)
+            };
 
             let base = match stripped {
                 "meters" | "meter" | "m" => BaseUnit::Meter.into(),
@@ -171,7 +175,7 @@ impl std::convert::TryFrom<&str> for Unit {
                 "kelvin" | "K" => BaseUnit::Kelvin.into(),
                 "moles" | "mols" | "mol" | "mole" | "M" => BaseUnit::Mole.into(),
                 "candela" => BaseUnit::Candela.into(),
-                "J" | "joules" => Unit {
+                "J" | "joule" => Unit {
                     desc: UnitDesc::Base([
                         Ratio::from(2),
                         Ratio::one(),
@@ -184,7 +188,7 @@ impl std::convert::TryFrom<&str> for Unit {
                     exp: 0,
                     mult: 1.0,
                 },
-                "N" | "newtons" => Unit {
+                "N" | "newton" => Unit {
                     desc: UnitDesc::Base([
                         Ratio::one(),
                         Ratio::one(),
@@ -196,6 +200,58 @@ impl std::convert::TryFrom<&str> for Unit {
                     ]),
                     exp: 3,
                     mult: 1.0,
+                },
+                "minute" | "min" => Unit {
+                    desc: UnitDesc::Base([
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::one(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                    ]),
+                    exp: 0,
+                    mult: 60.0,
+                },
+                "hour" | "hours" => Unit {
+                    desc: UnitDesc::Base([
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::one(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                    ]),
+                    exp: 0,
+                    mult: 60.0 * 60.0,
+                },
+                "day" | "days" => Unit {
+                    desc: UnitDesc::Base([
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::one(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                    ]),
+                    exp: 0,
+                    mult: 60.0 * 60.0 * 24.0,
+                },
+                "year" | "years" => Unit {
+                    desc: UnitDesc::Base([
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::one(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                    ]),
+                    exp: 0,
+                    mult: 60.0 * 60.0 * 24.0 * 365.0,
                 },
                 _ => {
                     dbg!(s);

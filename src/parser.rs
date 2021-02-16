@@ -1,4 +1,3 @@
-use crate::expr::unit::UNIT_PREFIXES_ABBR;
 use std::convert::TryInto;
 
 use pest::iterators::{Pair, Pairs};
@@ -11,7 +10,7 @@ use crate::{
 };
 
 use crate::{
-    expr::unit::{Unit, UNIT_PREFIXES},
+    expr::unit::Unit,
     expr::val::Val,
     expr::{Expr, Op},
 };
@@ -31,31 +30,8 @@ pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
                 match nx.as_rule() {
                     Rule::unit => {
                         let rule_str = nx.as_str();
-                        let mut res = UNIT_PREFIXES.iter().find_map(|(prefix, pow)| {
-                            if let Some(stripped) = rule_str.strip_prefix(prefix) {
-                                Some((stripped, pow))
-                            } else {
-                                None
-                            }
-                        });
-
-                        if res == None {
-                            res = UNIT_PREFIXES_ABBR.iter().find_map(|(prefix, pow)| {
-                                if let Some(stripped) = rule_str.strip_prefix(prefix) {
-                                    Some((stripped, pow))
-                                } else {
-                                    None
-                                }
-                            });
-                        }
-
-                        let (stripped, pow) = res.unwrap_or((rule_str, &0));
-                        let unit: Unit = stripped.try_into().unwrap();
-                        UnitExpr::Atom(Unit {
-                            desc: unit.desc,
-                            exp: unit.exp + pow,
-                            mult: unit.mult,
-                        })
+                        let unit: Unit = rule_str.try_into().unwrap();
+                        UnitExpr::Atom(rule_str.try_into().unwrap())
                     }
                     Rule::unit_expr => {
                         let unit = parse_unit_expr(nx).eval();
@@ -140,8 +116,9 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
                     Rule::unit_expr => {
+                        let s = nx.as_str().to_string();
                         let unit = parse_unit_expr(nx).eval();
-                        Op::AddUnit(unit)
+                        Op::AddUnit(unit, s)
                     }
                     _ => todo!(),
                 };
@@ -178,7 +155,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
 
 fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
     Some(match op {
-        Op::AddUnit(_) => (9, ()),
+        Op::AddUnit(_, _) => (9, ()),
         _ => return None,
     })
 }

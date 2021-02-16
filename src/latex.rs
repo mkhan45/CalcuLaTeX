@@ -36,7 +36,7 @@ impl ToString for LaTeX {
 impl ToLaTeX for Expr {
     fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
         match self {
-            Expr::Atom(v) => LaTeX::Math(v.to_string()),
+            Expr::Atom(v) => LaTeX::Math(v.to_latex().to_string()),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
             Expr::Cons(op, e) => match (op, e.as_slice()) {
                 (Op::Plus, [a, b, ..]) => LaTeX::Math(format!(
@@ -64,11 +64,9 @@ impl ToLaTeX for Expr {
                     a.to_latex().to_string(),
                     b.to_latex().to_string()
                 )),
-                (Op::AddUnit(u), [v]) => LaTeX::Math(format!(
-                    "{}\\ {}",
-                    v.to_latex().to_string(),
-                    u.to_latex().to_string(),
-                )),
+                (Op::AddUnit(_, s), [v]) => {
+                    LaTeX::Math(format!("{}\\ {}", (v).to_latex().to_string(), s,))
+                }
                 _ => todo!(),
             },
         }
@@ -91,16 +89,17 @@ impl ToLaTeX for Val {
             }
             Some(FormatArgs::UnitHint { string, .. }) => {
                 panic!(
-                    "Unit hint {} does not value with unit {}",
+                    "Unit hint {} does not match value with unit {}",
                     string, self.unit
                 )
             }
             None => {
                 let unit_str = self.unit.to_latex().to_string();
+                let num = self.num * self.unit.mult * 10f64.powi(self.unit.exp as i32);
                 let out = if !unit_str.is_empty() {
-                    format!("{} \\ {}", self.num, unit_str)
+                    format!("{} \\ {}", num, unit_str)
                 } else {
-                    self.num.to_string()
+                    num.to_string()
                 };
                 LaTeX::Math(out.trim().to_string())
             }

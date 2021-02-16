@@ -46,7 +46,7 @@ impl Expr {
                 (Op::Mul, [a, b]) => e(a) * e(b),
                 (Op::Div, [a, b]) => e(a) / e(b),
                 (Op::Exp, [a, b]) => e(a).pow(&e(b)),
-                (Op::AddUnit(u), [v]) => e(v).with_unit(&u),
+                (Op::AddUnit(u, _), [v]) => e(v).with_unit(&u),
                 _ => todo!(),
             },
         }
@@ -60,5 +60,5 @@ pub enum Op {
     Mul,
     Div,
     Exp,
-    AddUnit(Unit),
+    AddUnit(Unit, String),
 }
