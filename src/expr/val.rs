@@ -19,7 +19,7 @@ impl std::ops::Add<Val> for Val {
     fn add(self, rhs: Val) -> Self::Output {
         if self.unit == rhs.unit {
             Val {
-                num: self.num + rhs.num,
+                num: self.num + rhs.num * rhs.unit.mult * 10f64.powi(rhs.unit.exp as i32),
                 unit: self.unit,
             }
         } else {
@@ -34,7 +34,7 @@ impl std::ops::Sub<Val> for Val {
     fn sub(self, rhs: Val) -> Self::Output {
         if self.unit == rhs.unit {
             Val {
-                num: self.num - rhs.num,
+                num: self.num - rhs.num * rhs.unit.mult * 10f64.powi(rhs.unit.exp as i32),
                 unit: self.unit,
             }
         } else {
@@ -69,23 +69,29 @@ impl Val {
     pub fn with_unit(&self, unit: &Unit) -> Val {
         if self.unit == Unit::empty() {
             Val {
-                num: self.num,
-                unit: unit.clone(),
+                num: self.num * unit.mult * 10f64.powi(unit.exp as i32),
+                unit: Unit {
+                    desc: unit.desc.clone(),
+                    ..Default::default()
+                },
             }
         } else {
             Val {
-                num: self.num,
-                unit: self.unit.clone() * unit.clone(),
+                num: self.num * unit.mult * 10f64.powi(unit.exp as i32),
+                unit: Unit {
+                    desc: (self.unit.clone() * unit.clone()).desc,
+                    ..Default::default()
+                },
             }
         }
     }
 
     pub fn pow(&self, rhs: &Val) -> Val {
-        if rhs.unit == Unit::empty() && rhs.num.fract() == 0.0 {
+        if rhs.unit == Unit::empty() || rhs.num.fract() == 0.0 {
             let pow = rhs.num as i8;
             let unit = self.unit.pow(pow);
             Val {
-                num: self.num.powi(rhs.num as i32),
+                num: self.num.powf(rhs.num),
                 unit,
             }
         } else {

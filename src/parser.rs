@@ -1,5 +1,4 @@
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
-use crate::unit_expr::UnitPow;
 use std::convert::TryInto;
 
 use pest::iterators::{Pair, Pairs};
@@ -51,11 +50,16 @@ pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
                         }
 
                         let (stripped, pow) = res.unwrap_or((rule_str, &0));
-                        UnitExpr::Atom(stripped.try_into().unwrap(), *pow)
+                        let unit: Unit = stripped.try_into().unwrap();
+                        UnitExpr::Atom(Unit {
+                            desc: unit.desc,
+                            exp: unit.exp + pow,
+                            mult: unit.mult,
+                        })
                     }
                     Rule::unit_expr => {
-                        let UnitPow { unit, pow } = parse_unit_expr(nx).eval();
-                        UnitExpr::Atom(unit, pow)
+                        let unit = parse_unit_expr(nx).eval();
+                        UnitExpr::Atom(unit)
                     }
                     _ => unreachable!(),
                 }
@@ -136,8 +140,8 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
                     Rule::unit_expr => {
-                        let UnitPow { unit, pow } = parse_unit_expr(nx).eval();
-                        Op::AddMultiUnit(pow, unit)
+                        let unit = parse_unit_expr(nx).eval();
+                        Op::AddUnit(unit)
                     }
                     _ => todo!(),
                 };
@@ -174,7 +178,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
 
 fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
     Some(match op {
-        Op::AddMultiUnit(_, _) => (9, ()),
+        Op::AddUnit(_) => (9, ()),
         _ => return None,
     })
 }

@@ -1,8 +1,7 @@
-use crate::expr::unit::BaseUnit;
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
+use crate::expr::unit::{BaseUnit, UnitDesc};
 use crate::expr::{unit::Unit, val::Val, Expr, Op};
-use crate::unit_expr::UnitPow;
 use num::rational::Ratio;
 use num::One;
 use num::Signed;
@@ -15,7 +14,7 @@ pub enum LaTeX {
 
 #[derive(Debug)]
 pub enum FormatArgs {
-    UnitHint { string: String, value: UnitPow },
+    UnitHint { string: String, value: Unit },
 }
 
 pub trait ToLaTeX {
@@ -65,10 +64,9 @@ impl ToLaTeX for Expr {
                     a.to_latex().to_string(),
                     b.to_latex().to_string()
                 )),
-                (Op::AddMultiUnit(m, u), [v]) => LaTeX::Math(format!(
-                    "{}\\ {}{}",
+                (Op::AddUnit(u), [v]) => LaTeX::Math(format!(
+                    "{}\\ {}",
                     v.to_latex().to_string(),
-                    UNIT_PREFIXES_ABBR.get_by_right(m).unwrap_or(&""),
                     u.to_latex().to_string(),
                 )),
                 _ => todo!(),
@@ -82,9 +80,13 @@ impl ToLaTeX for Val {
         match args {
             Some(FormatArgs::UnitHint {
                 string,
-                value: UnitPow { unit, pow },
+                value: unit @ Unit { desc: _, exp, mult },
             }) if unit == &self.unit => {
-                let out = format!("{} \\ {}", self.num / 10f64.powi(*pow as i32), string);
+                let out = format!(
+                    "{} \\ {}",
+                    self.num / 10f64.powi(*exp as i32) / mult,
+                    string
+                );
                 LaTeX::Math(out.trim().to_string())
             }
             Some(FormatArgs::UnitHint { string, .. }) => {
@@ -108,19 +110,22 @@ impl ToLaTeX for Val {
 
 impl ToLaTeX for Unit {
     fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
-        match self {
-            Unit::Base(arr) => {
+        match self.desc.clone() {
+            UnitDesc::Base(arr) => {
                 let mut numerator = Vec::new();
                 let mut denominator = Vec::new();
-                arr.iter().zip(BASE_UNITS.iter()).for_each(|(pow, unit)| {
-                    use std::cmp::Ordering::*;
+                arr.iter()
+                    .rev()
+                    .zip(BASE_UNITS.iter().rev())
+                    .for_each(|(pow, unit)| {
+                        use std::cmp::Ordering::*;
 
-                    match pow.cmp(&Ratio::zero()) {
-                        Greater => numerator.push((pow, unit)),
-                        Less => denominator.push((pow, unit)),
-                        _ => {}
-                    }
-                });
+                        match pow.cmp(&Ratio::zero()) {
+                            Greater => numerator.push((pow, unit)),
+                            Less => denominator.push((pow, unit)),
+                            _ => {}
+                        }
+                    });
 
                 let latexify_single_unit = |(pow, unit): &(&Ratio<i8>, &BaseUnit)| {
                     if pow.abs() == Ratio::one() {
@@ -131,25 +136,37 @@ impl ToLaTeX for Unit {
                 };
 
                 let numerator_string = numerator.iter().fold("".to_string(), |acc, unit_info| {
-                    format!("{} {}", acc, latexify_single_unit(unit_info))
+                    format!("{} {}\\,", acc, latexify_single_unit(unit_info))
                 });
                 let denominator_string =
                     denominator.iter().fold("".to_string(), |acc, unit_info| {
-                        format!("{} {}", acc, latexify_single_unit(unit_info))
+                        format!("{} {}\\,", acc, latexify_single_unit(unit_info))
                     });
 
-                if numerator_string.is_empty() {
-                    LaTeX::Math(format!("\\frac{{1}}{{{}}}", denominator_string))
+                if numerator_string.is_empty() && denominator_string.is_empty() {
+                    LaTeX::Math("".to_string())
+                } else if numerator_string.is_empty() {
+                    LaTeX::Math(format!(
+                        "\\frac{{1}}{{{}{}}}",
+                        UNIT_PREFIXES_ABBR.get_by_right(&self.exp).unwrap(),
+                        denominator_string
+                    ))
                 } else if denominator.is_empty() {
-                    LaTeX::Math(numerator_string)
+                    LaTeX::Math(format!(
+                        "{}{}",
+                        UNIT_PREFIXES_ABBR.get_by_right(&self.exp).unwrap(),
+                        numerator_string
+                    ))
                 } else {
                     LaTeX::Math(format!(
-                        "\\frac{{{}}}{{{}}}",
-                        numerator_string, denominator_string
+                        "\\frac{{{}{}}}{{{}}}",
+                        UNIT_PREFIXES_ABBR.get_by_right(&self.exp).unwrap(),
+                        numerator_string,
+                        denominator_string
                     ))
                 }
             }
-            Unit::Custom(_map) => {
+            UnitDesc::Custom(_map) => {
                 todo!()
             }
         }

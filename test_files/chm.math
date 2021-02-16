@@ -1,0 +1,23 @@
+minute = 60 s
+hour = 60 * minute
+day = 24 * hour
+week = 7 * day
+month = 4 * week
+year = 12 * month
+
+ln2 = 0.693
+
+k = ln2 / (4.47 * 10^9 * year) = ?
+
+e = 2.71828
+
+hl = 4.47 * year * 10^9 = ?
+t_{est} = 3.8 * year * 10^9 = ?
+
+ntn0 = 1 / (e^(k * t_{est})) = ?
+
+mass = 1.515 g
+
+x = (mass - (ntn0 * mass)) / ntn0 = ?
+
+x * ((1 mol) / (238 g)) * ((206 g) / (1 mol)) = ?

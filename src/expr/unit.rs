@@ -16,6 +16,7 @@ lazy_static! {
         m.insert("centi", -2);
         m.insert("deci", -1);
         m.insert("deca", 1);
+        m.insert("", 0);
         m.insert("hecto", 2);
         m.insert("kilo", 3);
         m
@@ -25,6 +26,7 @@ lazy_static! {
         m.insert("c", -2);
         m.insert("d", -1);
         m.insert("de", 1);
+        m.insert("", 0);
         m.insert("h", 2);
         m.insert("k", 3);
         m
@@ -92,9 +94,26 @@ pub const BASE_UNITS: [BaseUnit; 7] = [
 ];
 
 #[derive(Clone)]
-pub enum Unit {
+pub enum UnitDesc {
     Base([Ratio<i8>; 7]),
     Custom(BTreeMap<String, Ratio<u8>>),
+}
+
+#[derive(Clone)]
+pub struct Unit {
+    pub desc: UnitDesc,
+    pub exp: i8,
+    pub mult: f64,
+}
+
+impl Default for Unit {
+    fn default() -> Self {
+        Unit {
+            desc: UnitDesc::Base([Ratio::zero(); 7]),
+            exp: 0,
+            mult: 1.0,
+        }
+    }
 }
 
 impl Debug for Unit {
@@ -105,7 +124,11 @@ impl Debug for Unit {
 
 impl Unit {
     pub fn empty() -> Self {
-        Unit::Base([Ratio::zero(); 7])
+        Unit {
+            desc: UnitDesc::Base([Ratio::zero(); 7]),
+            exp: 0,
+            mult: 1.0,
+        }
     }
 
     pub fn pow(&self, rhs: i8) -> Self {
@@ -117,8 +140,8 @@ impl Unit {
 
 impl PartialEq for Unit {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Unit::Base(a), Unit::Base(b)) => a == b,
+        match (self.desc.clone(), other.desc.clone()) {
+            (UnitDesc::Base(a), UnitDesc::Base(b)) => a == b,
             _ => todo!(),
         }
     }
@@ -128,26 +151,62 @@ impl std::convert::TryFrom<&str> for Unit {
     type Error = &'static str;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        Ok(match s.trim() {
-            "meters" | "meter" | "m" => BaseUnit::Meter.into(),
-            "grams" | "gram" | "g" | "gm" => BaseUnit::Gram.into(),
-            "second" | "seconds" | "s" => BaseUnit::Second.into(),
-            "amp" | "amps" | "ampere" | "amperes" => BaseUnit::Ampere.into(),
-            "kelvin" | "K" => BaseUnit::Kelvin.into(),
-            "moles" | "mols" | "mol" | "mole" | "M" => BaseUnit::Mole.into(),
-            "candela" => BaseUnit::Candela.into(),
-            "J" | "joules" => Unit::Base([
-                Ratio::from(2),
-                Ratio::one(),
-                Ratio::from(-2),
-                Ratio::zero(),
-                Ratio::zero(),
-                Ratio::zero(),
-                Ratio::zero(),
-            ]),
-            _ => {
-                dbg!(s);
-                return Err("Bad unit");
+        Ok({
+            let (stripped, exp) = UNIT_PREFIXES
+                .iter()
+                .chain(UNIT_PREFIXES_ABBR.iter())
+                .filter(|(p, _)| !p.is_empty())
+                .find_map(|(prefix, exp)| {
+                    s.trim()
+                        .strip_prefix(prefix)
+                        .map(|stripped| (stripped, exp))
+                })
+                .unwrap_or((s.trim(), &0));
+
+            let base = match stripped {
+                "meters" | "meter" | "m" => BaseUnit::Meter.into(),
+                "grams" | "gram" | "g" | "gm" => BaseUnit::Gram.into(),
+                "second" | "seconds" | "s" => BaseUnit::Second.into(),
+                "amp" | "amps" | "ampere" | "amperes" => BaseUnit::Ampere.into(),
+                "kelvin" | "K" => BaseUnit::Kelvin.into(),
+                "moles" | "mols" | "mol" | "mole" | "M" => BaseUnit::Mole.into(),
+                "candela" => BaseUnit::Candela.into(),
+                "J" | "joules" => Unit {
+                    desc: UnitDesc::Base([
+                        Ratio::from(2),
+                        Ratio::one(),
+                        Ratio::from(-2),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                    ]),
+                    exp: 0,
+                    mult: 1.0,
+                },
+                "N" | "newtons" => Unit {
+                    desc: UnitDesc::Base([
+                        Ratio::one(),
+                        Ratio::one(),
+                        Ratio::from(-2),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                        Ratio::zero(),
+                    ]),
+                    exp: 3,
+                    mult: 1.0,
+                },
+                _ => {
+                    dbg!(s);
+                    return Err("Bad unit");
+                }
+            };
+
+            Unit {
+                desc: base.desc,
+                exp: exp + base.exp,
+                mult: base.mult,
             }
         })
     }
@@ -166,14 +225,19 @@ impl From<BaseUnit> for Unit {
             BaseUnit::Candela => 6,
         };
         arr[index] = Ratio::one();
-        Unit::Base(arr)
+        let desc = UnitDesc::Base(arr);
+        Unit {
+            desc,
+            exp: 0,
+            mult: 1.0,
+        }
     }
 }
 
 impl std::fmt::Display for Unit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Unit::Base(arr) => {
+        match self.desc.clone() {
+            UnitDesc::Base(arr) => {
                 let res =
                     arr.iter()
                         .zip(BASE_UNITS.iter())
@@ -184,7 +248,7 @@ impl std::fmt::Display for Unit {
                         });
                 write!(f, "{}", res.trim())
             }
-            Unit::Custom(_map) => {
+            UnitDesc::Custom(_map) => {
                 todo!()
             }
         }
@@ -200,7 +264,7 @@ mod tests {
         let u: Unit = BaseUnit::Meter.into();
         assert_eq!(format!("{}", u).as_str(), "m");
 
-        let u = Unit::Base([
+        let desc = UnitDesc::Base([
             Ratio::one(),
             Ratio::one(),
             Ratio::zero(),
@@ -209,9 +273,14 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
+        let u = Unit {
+            desc,
+            exp: 0,
+            mult: 1.0,
+        };
         assert_eq!(format!("{}", u).as_str(), "m g");
 
-        let u = Unit::Base([
+        let desc = UnitDesc::Base([
             Ratio::one(),
             Ratio::one() * 2,
             -Ratio::one(),
@@ -220,6 +289,11 @@ mod tests {
             Ratio::zero(),
             Ratio::zero(),
         ]);
+        let u = Unit {
+            desc,
+            exp: 0,
+            mult: 1.0,
+        };
         assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
     }
 }
@@ -228,15 +302,19 @@ impl std::ops::Mul for Unit {
     type Output = Unit;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        match (self, rhs) {
-            (Unit::Base(a), Unit::Base(b)) => {
+        match (self.desc, rhs.desc) {
+            (UnitDesc::Base(a), UnitDesc::Base(b)) => {
                 let mut res = [Ratio::zero(); 7];
                 res.iter_mut()
                     .zip(a.iter().zip(b.iter()))
                     .for_each(|(r, (a, b))| {
                         *r = a + b;
                     });
-                Unit::Base(res)
+                Unit {
+                    desc: UnitDesc::Base(res),
+                    exp: self.exp + rhs.exp,
+                    mult: self.mult * rhs.mult,
+                }
             }
             _ => todo!(),
         }
@@ -247,15 +325,19 @@ impl std::ops::Div for Unit {
     type Output = Unit;
 
     fn div(self, rhs: Self) -> Self::Output {
-        match (self, rhs) {
-            (Unit::Base(a), Unit::Base(b)) => {
+        match (self.desc, rhs.desc) {
+            (UnitDesc::Base(a), UnitDesc::Base(b)) => {
                 let mut res = [Ratio::zero(); 7];
                 res.iter_mut()
                     .zip(a.iter().zip(b.iter()))
                     .for_each(|(r, (a, b))| {
                         *r = a - b;
                     });
-                Unit::Base(res)
+                Unit {
+                    desc: UnitDesc::Base(res),
+                    exp: self.exp - rhs.exp,
+                    mult: self.mult / rhs.mult,
+                }
             }
             _ => todo!(),
         }
