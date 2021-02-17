@@ -25,6 +25,7 @@ pub enum Statement {
         rhs: Expr,
         unit_hint: Option<FormatArgs>,
     },
+    LineGap,
 }
 
 #[derive(Default)]
@@ -53,6 +54,7 @@ impl State {
     pub fn exec(&mut self) {
         for stmt in self.statements.iter() {
             match stmt {
+                Statement::LineGap => self.output.push_str("\\\\"),
                 Statement::ExprStmt(expr) => {
                     // expr statements don't really have a use since
                     // there are no functions with side effects

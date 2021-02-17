@@ -74,6 +74,7 @@ pub fn parse_block(s: &str) -> Vec<Statement> {
             Rule::var_dec => parse_var_dec(stmt),
             Rule::print_expr => parse_print_stmt(stmt),
             Rule::dec_print_expr => parse_dec_print_stmt(stmt),
+            Rule::line_gap_stmt => Statement::LineGap,
             _ => unreachable!(),
         }
     })

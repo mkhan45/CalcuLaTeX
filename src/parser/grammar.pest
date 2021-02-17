@@ -19,11 +19,13 @@ operation = @{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
-statement = { dec_print_expr | print_expr | var_dec | expression }
+statement = { line_gap_stmt | (dec_print_expr | print_expr | var_dec | expression) ~ "\n" }
+    line_gap_stmt = { " "* ~ "\n" }
     var_dec = { ident ~ "=" ~ expression }
     print_expr = { expression ~ "=" ~ "?" ~ unit_expr? }
     dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" ~ unit_expr? }
 
-program = _{ "\n"* ~ statement ~ ("\n" ~ program)* }
+program = _{ "\n"* ~ statement ~ sub_program* }
+    sub_program = _{ statement ~ sub_program* }
 
 WHITESPACE = _{ " " | "\t" }
