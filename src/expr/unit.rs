@@ -136,11 +136,6 @@ impl Unit {
         (0..rhs - 1).for_each(|_| ret = ret.clone() * self.clone());
         ret
     }
-
-    pub fn test(&self) {
-        println!("Unit {{\nexp = {}\nmult={}\n}}",
-            self.exp,self.mult);
-    }
 }
 
 impl PartialEq for Unit {
