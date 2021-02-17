@@ -65,7 +65,7 @@ mod tests {
         );
         assert_eq!(
             full_eval("5 meters / 4 grams").to_string(),
-            "1.25 m g^-1".to_string()
+            "5/4 m g^-1".to_string()
         );
     }
 }

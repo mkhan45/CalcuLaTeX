@@ -311,49 +311,6 @@ impl std::fmt::Display for Unit {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_disp() {
-        let u: Unit = BaseUnit::Meter.into();
-        assert_eq!(format!("{}", u).as_str(), "m");
-
-        let desc = UnitDesc::Base([
-            Ratio::one(),
-            Ratio::one(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-        ]);
-        let u = Unit {
-            desc,
-            exp: 0,
-            mult: 1.0,
-        };
-        assert_eq!(format!("{}", u).as_str(), "m g");
-
-        let desc = UnitDesc::Base([
-            Ratio::one(),
-            Ratio::one() * 2,
-            -Ratio::one(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-        ]);
-        let u = Unit {
-            desc,
-            exp: 0,
-            mult: 1.0,
-        };
-        assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
-    }
-}
-
 impl std::ops::Mul for Unit {
     type Output = Unit;
 
@@ -397,5 +354,48 @@ impl std::ops::Div for Unit {
             }
             _ => todo!(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_disp() {
+        let u: Unit = BaseUnit::Meter.into();
+        assert_eq!(format!("{}", u).as_str(), "m");
+
+        let desc = UnitDesc::Base([
+            Ratio::one(),
+            Ratio::one(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+        ]);
+        let u = Unit {
+            desc,
+            exp: 0,
+            mult: rug::Rational::from_f32(1.0).unwrap(),
+        };
+        assert_eq!(format!("{}", u).as_str(), "m g");
+
+        let desc = UnitDesc::Base([
+            Ratio::one(),
+            Ratio::one() * 2,
+            -Ratio::one(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+        ]);
+        let u = Unit {
+            desc,
+            exp: 0,
+            mult: rug::Rational::from_f32(1.0).unwrap(),
+        };
+        assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
     }
 }
