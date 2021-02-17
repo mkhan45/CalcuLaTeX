@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn test_basic() {
         assert_eq!(full_eval("5 - 3").to_string(), "2".to_string());
-        dbg!(full_eval("5 kg"));
+        // dbg!(full_eval("5 kg"));
         assert_eq!(full_eval("5 kg").to_string(), "5000 g".to_string());
         assert_eq!(full_eval("5 grams").to_string(), "5 g".to_string());
         assert_eq!(
