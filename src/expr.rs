@@ -6,6 +6,8 @@ use val::*;
 pub mod unit;
 use unit::*;
 
+pub mod unit_expr;
+
 use crate::statement::Scope;
 
 #[derive(Debug)]

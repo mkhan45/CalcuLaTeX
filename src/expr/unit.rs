@@ -68,6 +68,15 @@ pub const BASE_UNITS: [BaseUnit; 7] = [
     BaseUnit::Candela,
 ];
 
+// The type of a Unit, e.g. grams or kilometers.
+// --
+// Base is an SI unit, derived or not.
+// The array is a list of powers for each SI base unit.
+// E.g. meters^2 / kelvin is [2, 0, 0, 0, -1, 0, 0]
+// --
+// Custom is not implemented yet, but I plan for users
+// to be able to create custom units, in which case the
+// map would just be [unit_name -> power]
 #[derive(Clone)]
 pub enum UnitDesc {
     Base([Ratio<i8>; 7]),
@@ -136,6 +145,10 @@ impl std::convert::TryFrom<&str> for Unit {
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         Ok({
+            // Find if the unit starts with an SI prefix, in which case it should be
+            // stripped and added to the exponent.
+            // Unfortunately, some units start with an abbreviated SI prefix so they
+            // have to be hardcoded out.
             let (stripped, exp) = if !matches!(s, "day" | "days" | "hours" | "hour") {
                 UNIT_PREFIXES
                     .iter()
@@ -243,6 +256,8 @@ impl From<BaseUnit> for Unit {
     }
 }
 
+// This is only used internally for testing,
+// ToLatex handles the proper formatting
 impl std::fmt::Display for Unit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.desc.clone() {
@@ -261,49 +276,6 @@ impl std::fmt::Display for Unit {
                 todo!()
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_disp() {
-        let u: Unit = BaseUnit::Meter.into();
-        assert_eq!(format!("{}", u).as_str(), "m");
-
-        let desc = UnitDesc::Base([
-            Ratio::one(),
-            Ratio::one(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-        ]);
-        let u = Unit {
-            desc,
-            exp: 0,
-            mult: rug::Rational::from(1),
-        };
-        assert_eq!(format!("{}", u).as_str(), "m g");
-
-        let desc = UnitDesc::Base([
-            Ratio::one(),
-            Ratio::one() * 2,
-            -Ratio::one(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-        ]);
-        let u = Unit {
-            desc,
-            exp: 0,
-            mult: rug::Rational::from(1),
-        };
-        assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
     }
 }
 
@@ -350,5 +322,48 @@ impl std::ops::Div for Unit {
             }
             _ => todo!(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_disp() {
+        let u: Unit = BaseUnit::Meter.into();
+        assert_eq!(format!("{}", u).as_str(), "m");
+
+        let desc = UnitDesc::Base([
+            Ratio::one(),
+            Ratio::one(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+        ]);
+        let u = Unit {
+            desc,
+            exp: 0,
+            mult: rug::Rational::from(1),
+        };
+        assert_eq!(format!("{}", u).as_str(), "m g");
+
+        let desc = UnitDesc::Base([
+            Ratio::one(),
+            Ratio::one() * 2,
+            -Ratio::one(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+            Ratio::zero(),
+        ]);
+        let u = Unit {
+            desc,
+            exp: 0,
+            mult: rug::Rational::from(1),
+        };
+        assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
     }
 }

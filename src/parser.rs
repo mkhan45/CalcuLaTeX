@@ -1,188 +1,20 @@
-use std::convert::TryInto;
-
-use pest::iterators::{Pair, Pairs};
+use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::*;
 
-use crate::{
-    statement::Statement,
-    unit_expr::{UnitExpr, UnitOp},
-};
-
-use crate::{
-    expr::unit::Unit,
-    expr::val::Val,
-    expr::{Expr, Op},
-};
+use crate::statement::Statement;
 
 use crate::latex::FormatArgs;
+
+pub mod unit;
+use unit::parse_unit_expr;
+
+pub mod expr;
+use expr::parse_expr;
 
 #[derive(Parser)]
 #[grammar = "parser/grammar.pest"]
 pub struct MathParser;
-
-pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
-    assert_eq!(r.as_rule(), Rule::unit_expr);
-
-    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> UnitExpr {
-        if let Some(nx) = inp.next() {
-            let mut lhs = {
-                match nx.as_rule() {
-                    Rule::unit => {
-                        let rule_str = nx.as_str();
-                        let unit: Unit = rule_str.try_into().unwrap();
-                        UnitExpr::Atom(unit)
-                    }
-                    Rule::unit_expr => {
-                        let unit = parse_unit_expr(nx).eval();
-                        UnitExpr::Atom(unit)
-                    }
-                    _ => unreachable!(),
-                }
-            };
-
-            while let Some(nx) = inp.peek() {
-                let op = match nx.as_str().trim() {
-                    "*" => UnitOp::Mul,
-                    "/" => UnitOp::Div,
-                    s if s.starts_with('^') => {
-                        let n = s.strip_prefix('^').unwrap();
-                        UnitOp::Exp(n.parse().unwrap())
-                    }
-                    _ => {
-                        dbg!(nx);
-                        panic!();
-                    }
-                };
-
-                if let Some((l_bp, ())) = unit_postfix_binding_power(&op) {
-                    if l_bp < bp {
-                        break;
-                    }
-
-                    inp.next();
-                    lhs = UnitExpr::Cons(op, vec![lhs]);
-
-                    continue;
-                }
-
-                let (l_bp, r_bp) = unit_infix_binding_power(&op);
-                if l_bp < bp {
-                    break;
-                }
-                inp.next();
-
-                let rhs = expr_bp(inp, r_bp);
-                lhs = UnitExpr::Cons(op, vec![lhs, rhs]);
-
-                continue;
-            }
-
-            lhs
-        } else {
-            unreachable!()
-        }
-    }
-
-    expr_bp(&mut r.into_inner(), 0)
-}
-
-pub fn parse_expr(r: Pair<Rule>) -> Expr {
-    assert_eq!(r.as_rule(), Rule::expression);
-
-    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> Expr {
-        if let Some(nx) = inp.next() {
-            let mut lhs = match nx.as_rule() {
-                Rule::number => Expr::Atom(Val {
-                    unit: Unit::empty(),
-                    num: rug::Rational::from_f64(nx.as_str().trim().parse::<f64>().unwrap())
-                        .unwrap(),
-                }),
-                Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
-                Rule::expression => parse_expr(nx),
-                _ => {
-                    dbg!(nx);
-                    unreachable!();
-                }
-            };
-
-            while let Some(nx) = inp.peek() {
-                let op = match nx.as_rule() {
-                    Rule::operation => match nx.as_str().trim() {
-                        "+" => Op::Plus,
-                        "-" => Op::Minus,
-                        "*" => Op::Mul,
-                        "/" => Op::Div,
-                        "^" => Op::Exp,
-                        _ => panic!("Bad operator {}", nx.as_str().trim()),
-                    },
-                    Rule::unit_expr => {
-                        let s = nx.as_str().to_string();
-                        let unit = parse_unit_expr(nx).eval();
-                        Op::AddUnit(unit, s)
-                    }
-                    _ => todo!(),
-                };
-
-                if let Some((l_bp, ())) = postfix_binding_power(&op) {
-                    if l_bp < bp {
-                        break;
-                    }
-                    inp.next();
-
-                    lhs = Expr::Cons(op, vec![lhs]);
-
-                    continue;
-                }
-
-                let (l_bp, r_bp) = infix_binding_power(&op);
-                if l_bp < bp {
-                    break;
-                }
-                inp.next();
-
-                let rhs = expr_bp(inp, r_bp);
-                lhs = Expr::Cons(op, vec![lhs, rhs]);
-            }
-
-            lhs
-        } else {
-            unreachable!()
-        }
-    }
-
-    expr_bp(&mut r.into_inner(), 0)
-}
-
-fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {
-    Some(match op {
-        Op::AddUnit(_, _) => (6, ()),
-        _ => return None,
-    })
-}
-
-fn unit_postfix_binding_power(op: &UnitOp) -> Option<(u8, ())> {
-    Some(match op {
-        UnitOp::Exp(_) => (3, ()),
-        _ => return None,
-    })
-}
-
-fn unit_infix_binding_power(op: &UnitOp) -> (u8, u8) {
-    match op {
-        UnitOp::Mul | UnitOp::Div => (1, 2),
-        _ => panic!(),
-    }
-}
-
-fn infix_binding_power(op: &Op) -> (u8, u8) {
-    match op {
-        Op::Plus | Op::Minus => (1, 2),
-        Op::Mul | Op::Div => (3, 4),
-        Op::Exp => (7, 8),
-        _ => panic!(),
-    }
-}
 
 fn parse_var_dec(r: Pair<Rule>) -> Statement {
     assert_eq!(r.as_rule(), Rule::var_dec);

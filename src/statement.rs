@@ -29,8 +29,13 @@ pub enum Statement {
 
 #[derive(Default)]
 pub struct State {
+    // Contains the variables in the program.
+    // Currently there is only one global scope
+    // and I don't think more is necessary
     pub scope: Scope,
+    // The statements to be executed
     pub statements: Vec<Statement>,
+    // The LaTeX output buffer
     pub output: String,
 }
 
@@ -49,9 +54,23 @@ impl State {
         for stmt in self.statements.iter() {
             match stmt {
                 Statement::ExprStmt(expr) => {
+                    // expr statements don't really have a use since
+                    // there are no functions with side effects
+                    // realistically this shouldn't even be evaluated
                     let _res = expr.eval(&self.scope);
                 }
                 Statement::VarDec { lhs, rhs } => {
+                    // lhs is just the variable name.
+                    // rhs is an expression. In this case, we don't
+                    // evaluate the expression, just latexify it.
+                    // Example: `x = 5 * 10 g` gets parsed roughly as
+                    //
+                    // ```
+                    // Statement::VarDec {
+                    //      lhs: "x",
+                    //      rhs: parse_expr("5 * 10 g")
+                    // }
+                    // ```
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
@@ -65,6 +84,14 @@ impl State {
                         .insert(lhs.clone(), rhs.eval(&self.scope));
                 }
                 Statement::PrintExpr { expr, unit_hint } => {
+                    // Example: `5 * 10 kg = ? g` gets parsed roughly as
+                    //
+                    // ```
+                    // Statement::PrintExpr {
+                    //      expr: parse_expr("5 * 10 g"),
+                    //      unit_hint: Gram
+                    // }
+                    // ```
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
@@ -82,6 +109,8 @@ impl State {
                     rhs,
                     unit_hint,
                 } => {
+                    // `DecPrintExpr` could probably be merged with `VarDec`,
+                    // basically it's a combination of `PrintExpr` and `VarDec`
                     let val = rhs.eval(&self.scope);
                     self.output.push_str(
                         format!(

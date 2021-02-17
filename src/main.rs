@@ -3,7 +3,6 @@
 use notify::{self, Watcher};
 
 mod parser;
-mod unit_expr;
 
 mod expr;
 use expr::val::Val;
@@ -16,28 +15,28 @@ mod latex;
 use std::io::Write;
 
 #[cfg(test)]
-fn full_eval(s: &str) -> Val {
-    use crate::parser::*;
-    use pest::Parser;
-    use statement::Scope;
-
-    let scope = Scope::default();
-
-    parse_expr(
-        MathParser::parse(Rule::expression, s)
-            .unwrap()
-            .next()
-            .unwrap(),
-    )
-    .eval(&scope)
-}
-
-#[cfg(test)]
 mod tests {
     use std::convert::TryFrom;
 
     use super::*;
     use crate::expr::unit::Unit;
+
+    fn full_eval(s: &str) -> Val {
+        use crate::parser::expr::parse_expr;
+        use crate::parser::{MathParser, Rule};
+        use pest::Parser;
+        use statement::Scope;
+
+        let scope = Scope::default();
+
+        parse_expr(
+            MathParser::parse(Rule::expression, s)
+                .unwrap()
+                .next()
+                .unwrap(),
+        )
+        .eval(&scope)
+    }
 
     #[test]
     fn test_basic() {
@@ -71,6 +70,7 @@ mod tests {
 }
 
 fn main() {
+    // Usage: {cmd} [input_file] [output_pdf]
     let args = std::env::args().collect::<Vec<String>>();
     let filename = &args[1];
 
