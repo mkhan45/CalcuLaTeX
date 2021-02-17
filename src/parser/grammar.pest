@@ -9,7 +9,7 @@ unit_expr = { unit_term ~ (unit_operation ~ unit_term)* }
     paren_unit_expr = _{ "(" ~ unit_expr ~ ")" }
 
 expression = { term ~ (operation ~ term)* }
-    term = _{ paren_expr | (ident | number | unit_expr ) ~ unit_expr* }
+    term = _{ paren_expr | (ident | number) ~ unit_expr* }
     paren_expr = _{"(" ~ expression ~ ")"}
 
 operation = @{ add | subtract | multiply | divide | power }

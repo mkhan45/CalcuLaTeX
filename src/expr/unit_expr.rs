@@ -1,12 +1,12 @@
 use crate::expr::unit::Unit;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum UnitExpr {
     Atom(Unit),
     Cons(UnitOp, Vec<UnitExpr>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum UnitOp {
     Mul,
     Div,

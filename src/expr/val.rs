@@ -83,23 +83,21 @@ impl std::ops::Div<Val> for Val {
 impl Val {
     pub fn with_unit(&self, unit: &Unit) -> Val {
         if self.unit.desc.is_empty() {
+            let new_unit = Unit {
+                desc: unit.desc.clone(),
+                ..Default::default()
+            };
             Val {
                 num: rug::Rational::from(&self.num * &unit.mult)
                     * rug::Rational::try_from(10f64.powi(unit.exp as i32)).unwrap(),
-                unit: Unit {
-                    desc: unit.desc.clone(),
-                    ..Default::default()
-                },
+                unit: new_unit,
             }
         } else {
-            Val {
-                num: rug::Rational::from(&self.num * &unit.mult)
-                    * rug::Rational::try_from(10f64.powi(unit.exp as i32)).unwrap(),
-                unit: Unit {
-                    desc: (self.unit.clone() * unit.clone()).desc,
-                    ..Default::default()
-                },
-            }
+            self.clone()
+                * Val {
+                    unit: unit.clone(),
+                    num: rug::Rational::from(1),
+                }
         }
     }
 

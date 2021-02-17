@@ -7,6 +7,8 @@ use crate::{
     parser::{parse_unit_expr, Rule},
 };
 
+use crate::latex::ToLaTeX;
+
 pub fn parse_expr(r: Pair<Rule>) -> Expr {
     assert_eq!(r.as_rule(), Rule::expression);
 
@@ -37,9 +39,8 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
                     Rule::unit_expr => {
-                        let s = nx.as_str().to_string();
-                        let unit = parse_unit_expr(nx).eval();
-                        Op::AddUnit(unit, s)
+                        let unit_expr = parse_unit_expr(nx);
+                        Op::AddUnit(unit_expr.eval(), unit_expr.to_latex().to_string())
                     }
                     _ => todo!(),
                 };

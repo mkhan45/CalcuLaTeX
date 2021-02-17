@@ -1,3 +1,4 @@
+use crate::expr::unit_expr::{UnitExpr, UnitOp};
 use std::convert::TryFrom;
 
 use crate::expr::unit::BASE_UNITS;
@@ -69,6 +70,32 @@ impl ToLaTeX for Expr {
                 (Op::AddUnit(_, s), [v]) => {
                     LaTeX::Math(format!("{}\\ {}", (v).to_latex().to_string(), s,))
                 }
+                _ => todo!(),
+            },
+        }
+    }
+}
+
+impl ToLaTeX for UnitExpr {
+    fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
+        match self {
+            UnitExpr::Atom(u) => LaTeX::Math(u.to_latex().to_string()),
+            UnitExpr::Cons(op, e) => match (op, e.as_slice()) {
+                (UnitOp::Mul, [a, b, ..]) => LaTeX::Math(format!(
+                    "{} \\ {}",
+                    a.to_latex().to_string(),
+                    b.to_latex().to_string()
+                )),
+                (UnitOp::Div, [a, b, ..]) => LaTeX::Math(format!(
+                    "\\frac{{{}}}{{{}}}",
+                    a.to_latex().to_string(),
+                    b.to_latex().to_string()
+                )),
+                (UnitOp::Exp(e), [a, ..]) => LaTeX::Math(format!(
+                    "{}^{{{}}}",
+                    a.to_latex().to_string(),
+                    e.to_string()
+                )),
                 _ => todo!(),
             },
         }
