@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
 use crate::expr::unit::{BaseUnit, UnitDesc};
@@ -78,11 +80,15 @@ impl ToLaTeX for Val {
         match args {
             Some(FormatArgs::UnitHint {
                 string,
-                value: unit @ Unit { desc: _, exp, mult },
-            }) if unit == &self.unit => {
+                value: Unit { desc, exp, mult },
+            }) if desc == &self.unit.desc => {
                 let out = format!(
                     "{} \\ {}",
-                    (&self.num / rug::Rational::from(10i32.pow(*exp as u32)) / mult).to_f64(),
+                    (&self.num
+                        / rug::Rational::try_from(10f64.powi((*exp - self.unit.exp) as i32))
+                            .unwrap()
+                        / rug::Rational::from(mult / &self.unit.mult))
+                    .to_f64(),
                     string
                 );
                 LaTeX::Math(out.trim().to_string())
@@ -96,7 +102,7 @@ impl ToLaTeX for Val {
             None => {
                 let unit_str = self.unit.to_latex().to_string();
                 let num = rug::Rational::from(&self.num * &self.unit.mult)
-                    * &rug::Rational::from(10i32.pow(self.unit.exp as u32));
+                    * &rug::Rational::try_from(10f64.powi(self.unit.exp as i32)).unwrap();
                 let out = if !unit_str.is_empty() {
                     format!("{} \\ {}", num.to_f64(), unit_str)
                 } else {

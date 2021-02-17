@@ -1,1 +1,11 @@
-x = -5.46 meters = ?
+m_p = 1.00728 amu
+m_e = 0.00055 amu
+m_n = 1.00866 amu
+
+n_p = 50
+n_e = n_p
+n_n = 118 - 50 = ?
+
+m_{expected} = 123.9053 amu
+m_{calculated} = n_p * m_p + n_e * m_e + n_n * m_n = ? amu
+dm = m_{expected} - m_{calculated} = ? amu

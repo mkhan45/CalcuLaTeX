@@ -33,31 +33,6 @@ lazy_static! {
     };
 }
 
-// enum UnitType {
-//     Length,
-//     Mass,
-//     Time,
-//     Current,
-//     Temperature,
-//     Moles,
-//     Luminosity,
-// }
-
-// impl ToString for UnitType {
-//     fn to_string(&self) -> String {
-//         match self {
-//             UnitType::Length => "length",
-//             UnitType::Mass => "mass",
-//             UnitType::Time => "time",
-//             UnitType::Current => "current",
-//             UnitType::Temperature => "temperature",
-//             UnitType::Moles => "moles",
-//             UnitType::Luminosity => "luminosity",
-//         }
-//         .to_string()
-//     }
-// }
-
 pub enum BaseUnit {
     Meter,
     Gram,
@@ -99,6 +74,15 @@ pub enum UnitDesc {
     Custom(BTreeMap<String, Ratio<u8>>),
 }
 
+impl UnitDesc {
+    pub fn is_empty(&self) -> bool {
+        match self {
+            UnitDesc::Base(a) => a == &[Ratio::zero(); 7],
+            UnitDesc::Custom(_) => todo!(),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Unit {
     pub desc: UnitDesc,
@@ -138,9 +122,9 @@ impl Unit {
     }
 }
 
-impl PartialEq for Unit {
+impl PartialEq for UnitDesc {
     fn eq(&self, other: &Self) -> bool {
-        match (self.desc.clone(), other.desc.clone()) {
+        match (&self, &other) {
             (UnitDesc::Base(a), UnitDesc::Base(b)) => a == b,
             _ => todo!(),
         }
@@ -202,56 +186,25 @@ impl std::convert::TryFrom<&str> for Unit {
                     mult: rug::Rational::from(1),
                 },
                 "minute" | "min" => Unit {
-                    desc: UnitDesc::Base([
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::one(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                    ]),
-                    exp: 0,
                     mult: rug::Rational::from(60),
+                    ..BaseUnit::Second.into()
                 },
                 "hour" | "hours" => Unit {
-                    desc: UnitDesc::Base([
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::one(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                    ]),
-                    exp: 0,
                     mult: rug::Rational::from(60 * 60),
+                    ..BaseUnit::Second.into()
                 },
                 "day" | "days" => Unit {
-                    desc: UnitDesc::Base([
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::one(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                    ]),
-                    exp: 0,
                     mult: rug::Rational::from(60 * 60 * 24),
+                    ..BaseUnit::Second.into()
                 },
                 "year" | "years" => Unit {
-                    desc: UnitDesc::Base([
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::one(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                    ]),
-                    exp: 0,
                     mult: rug::Rational::from(60 * 60 * 24 * 365),
+                    ..BaseUnit::Second.into()
+                },
+                "amu" => Unit {
+                    mult: rug::Rational::try_from(1.6603145).unwrap(),
+                    exp: -24,
+                    ..BaseUnit::Gram.into()
                 },
                 _ => {
                     dbg!(s);
@@ -332,7 +285,7 @@ mod tests {
         let u = Unit {
             desc,
             exp: 0,
-            mult: 1.0,
+            mult: rug::Rational::from(1),
         };
         assert_eq!(format!("{}", u).as_str(), "m g");
 
@@ -348,7 +301,7 @@ mod tests {
         let u = Unit {
             desc,
             exp: 0,
-            mult: 1.0,
+            mult: rug::Rational::from(1),
         };
         assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
     }

@@ -12,7 +12,11 @@ pub struct Val {
 
 impl std::fmt::Display for Val {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let out = format!("{} {}", self.num, self.unit.to_string());
+        let out = format!(
+            "{} {}",
+            self.num.to_f64().to_string(),
+            self.unit.to_string()
+        );
         write!(f, "{}", out.trim())
     }
 }
@@ -21,11 +25,14 @@ impl std::ops::Add<Val> for Val {
     type Output = Val;
 
     fn add(self, rhs: Val) -> Self::Output {
-        if self.unit == rhs.unit {
+        if self.unit.desc == rhs.unit.desc {
             Val {
                 num: self.num
                     + rhs.num * rhs.unit.mult * rug::Rational::from(10i32.pow(rhs.unit.exp as u32)),
-                unit: self.unit,
+                unit: Unit {
+                    exp: self.unit.exp + rhs.unit.exp,
+                    ..self.unit
+                },
             }
         } else {
             panic!("Can't add")
@@ -37,10 +44,13 @@ impl std::ops::Sub<Val> for Val {
     type Output = Val;
 
     fn sub(self, rhs: Val) -> Self::Output {
-        if self.unit == rhs.unit {
+        if self.unit.desc == rhs.unit.desc {
             Val {
-                num: self.num - rhs.num * rhs.unit.mult * 10i32.pow(rhs.unit.exp as u32),
-                unit: self.unit,
+                num: self.num - rhs.num * rhs.unit.mult,
+                unit: Unit {
+                    exp: self.unit.exp - rhs.unit.exp,
+                    ..self.unit
+                },
             }
         } else {
             std::panic::panic_any(format!("Can't sub {} from {}", rhs, self));
@@ -72,9 +82,10 @@ impl std::ops::Div<Val> for Val {
 
 impl Val {
     pub fn with_unit(&self, unit: &Unit) -> Val {
-        if self.unit == Unit::empty() {
+        if self.unit.desc.is_empty() {
             Val {
-                num: rug::Rational::from(&self.num * &unit.mult) * 10i32.pow(unit.exp as u32),
+                num: rug::Rational::from(&self.num * &unit.mult)
+                    * rug::Rational::try_from(10f64.powi(unit.exp as i32)).unwrap(),
                 unit: Unit {
                     desc: unit.desc.clone(),
                     ..Default::default()
@@ -83,7 +94,7 @@ impl Val {
         } else {
             Val {
                 num: rug::Rational::from(&self.num * &unit.mult)
-                    * rug::Rational::from(10i32.pow(unit.exp as u32)),
+                    * rug::Rational::try_from(10f64.powi(unit.exp as i32)).unwrap(),
                 unit: Unit {
                     desc: (self.unit.clone() * unit.clone()).desc,
                     ..Default::default()
@@ -94,7 +105,7 @@ impl Val {
 
     pub fn pow(&self, rhs: &Val) -> Val {
         let p = rhs.num.to_f64();
-        if rhs.unit == Unit::empty() || p.fract() == 0.0 {
+        if rhs.unit.desc.is_empty() || p.fract() == 0.0 {
             let pow = p as i8;
             let unit = self.unit.pow(pow);
             Val {
