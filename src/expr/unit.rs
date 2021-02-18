@@ -77,10 +77,19 @@ pub const BASE_UNITS: [BaseUnit; 7] = [
 // Custom is not implemented yet, but I plan for users
 // to be able to create custom units, in which case the
 // map would just be [unit_name -> power]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum UnitDesc {
     Base([Ratio<i8>; 7]),
     Custom(BTreeMap<String, Ratio<u8>>),
+}
+
+impl PartialEq for UnitDesc {
+    fn eq(&self, other: &Self) -> bool {
+        match (&self, &other) {
+            (UnitDesc::Base(a), UnitDesc::Base(b)) => a == b,
+            _ => todo!(),
+        }
+    }
 }
 
 impl UnitDesc {
@@ -92,7 +101,7 @@ impl UnitDesc {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Unit {
     pub desc: UnitDesc,
     pub exp: i8,
@@ -128,15 +137,6 @@ impl Unit {
         let mut ret = self.clone();
         (0..rhs - 1).for_each(|_| ret = ret.clone() * self.clone());
         ret
-    }
-}
-
-impl PartialEq for UnitDesc {
-    fn eq(&self, other: &Self) -> bool {
-        match (&self, &other) {
-            (UnitDesc::Base(a), UnitDesc::Base(b)) => a == b,
-            _ => todo!(),
-        }
     }
 }
 
@@ -328,42 +328,270 @@ impl std::ops::Div for Unit {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::convert::TryFrom;
 
     #[test]
-    fn test_disp() {
-        let u: Unit = BaseUnit::Meter.into();
-        assert_eq!(format!("{}", u).as_str(), "m");
+    fn to_string_base_unit() {
+        assert_eq!(&BaseUnit::Meter.to_string(), "m");
+        assert_eq!(&BaseUnit::Gram.to_string(), "g");
+        assert_eq!(&BaseUnit::Second.to_string(), "s");
+        assert_eq!(&BaseUnit::Ampere.to_string(), "A");
+        assert_eq!(&BaseUnit::Kelvin.to_string(), "K");
+        assert_eq!(&BaseUnit::Mole.to_string(), "M");
+        assert_eq!(&BaseUnit::Candela.to_string(), "cd");
+    }
 
-        let desc = UnitDesc::Base([
-            Ratio::one(),
-            Ratio::one(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-        ]);
-        let u = Unit {
-            desc,
-            exp: 0,
-            mult: rug::Rational::from(1),
-        };
-        assert_eq!(format!("{}", u).as_str(), "m g");
+    #[test]
+    fn empty_unit() {
+        let unit = Unit::empty();
+        assert_eq!(unit.to_string(), "");
+    }
 
-        let desc = UnitDesc::Base([
-            Ratio::one(),
-            Ratio::one() * 2,
-            -Ratio::one(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-            Ratio::zero(),
-        ]);
-        let u = Unit {
-            desc,
-            exp: 0,
-            mult: rug::Rational::from(1),
-        };
-        assert_eq!(format!("{}", u).as_str(), "m g^2 s^-1");
+    #[test]
+    fn pow_unit_meter() {
+        let unit = Unit::from(BaseUnit::Meter).pow(3);
+        assert_eq!(unit.to_string(), "m^3");
+    }
+
+    #[test]
+    fn pow_unit_gram() {
+        let unit = Unit::from(BaseUnit::Gram).pow(3);
+        assert_eq!(unit.to_string(), "g^3");
+    }
+
+    #[test]
+    fn pow_unit_second() {
+        let unit = Unit::from(BaseUnit::Second).pow(3);
+        assert_eq!(unit.to_string(), "s^3");
+    }
+
+    #[test]
+    fn pow_unit_ampere() {
+        let unit = Unit::from(BaseUnit::Ampere).pow(3);
+        assert_eq!(unit.to_string(), "A^3");
+    }
+
+    #[test]
+    fn pow_unit_kelvin() {
+        let unit = Unit::from(BaseUnit::Kelvin).pow(3);
+        assert_eq!(unit.to_string(), "K^3");
+    }
+
+    #[test]
+    fn pow_unit_mole() {
+        let unit = Unit::from(BaseUnit::Mole).pow(3);
+        assert_eq!(unit.to_string(), "M^3");
+    }
+
+    #[test]
+    fn pow_unit_candela() {
+        let unit = Unit::from(BaseUnit::Candela).pow(3);
+        assert_eq!(unit.to_string(), "cd^3");
+    }
+
+    #[test]
+    fn partial_eq_unit_base_success() {
+        let unit1 = Unit::from(BaseUnit::Meter);
+        let unit2 = Unit::from(BaseUnit::Meter);
+        assert_eq!(unit1, unit2);
+    }
+
+    #[test]
+    fn partial_eq_unit_base_failure() {
+        let unit1 = Unit::from(BaseUnit::Meter);
+        let unit2 = Unit::from(BaseUnit::Ampere);
+        assert_ne!(unit1, unit2);
+    }
+
+    #[test]
+    fn partial_eq_unit_pow_success() {
+        let unit1 = Unit::from(BaseUnit::Meter).pow(3);
+        let unit2 = Unit::from(BaseUnit::Meter).pow(3);
+        assert_eq!(unit1, unit2);
+    }
+
+    #[test]
+    fn partial_eq_unit_pow_failure() {
+        let unit1 = Unit::from(BaseUnit::Meter).pow(2);
+        let unit2 = Unit::from(BaseUnit::Meter).pow(3);
+        assert_ne!(unit1, unit2);
+    }
+
+    #[test]
+    fn try_from_unit_meter() {
+        let unit = Unit::try_from("meter").unwrap();
+        assert_eq!(unit.to_string(), "m");
+    }
+
+    #[test]
+    fn try_from_unit_gram() {
+        let unit = Unit::try_from("gram").unwrap();
+        assert_eq!(unit.to_string(), "g");
+    }
+
+    #[test]
+    fn try_from_unit_second() {
+        let unit = Unit::try_from("second").unwrap();
+        assert_eq!(unit.to_string(), "s");
+    }
+
+    #[test]
+    fn try_from_unit_ampere() {
+        let unit = Unit::try_from("ampere").unwrap();
+        assert_eq!(unit.to_string(), "A");
+    }
+
+    #[test]
+    fn try_from_unit_mole() {
+        let unit = Unit::try_from("mole").unwrap();
+        assert_eq!(unit.to_string(), "M");
+    }
+
+    #[test]
+    fn try_from_unit_joule() {
+        let unit1 = Unit::try_from("joule").unwrap();
+        assert_eq!(unit1.to_string(), "m^2 g s^-2");
+
+        let unit2 = Unit::try_from("J").unwrap();
+        assert_eq!(unit2.to_string(), "m^2 g s^-2");
+    }
+
+    #[test]
+    fn try_from_unit_newton() {
+        let unit1 = Unit::try_from("newton").unwrap();
+        assert_eq!(unit1.to_string(), "m g s^-2");
+
+        let unit2 = Unit::try_from("N").unwrap();
+        assert_eq!(unit2.to_string(), "m g s^-2");
+    }
+
+    #[test]
+    fn try_from_unit_minute() {
+        let unit1 = Unit::try_from("minute").unwrap();
+        assert_eq!(unit1.to_string(), "s");
+
+        let unit2 = Unit::try_from("min").unwrap();
+        assert_eq!(unit2.to_string(), "s");
+    }
+
+    #[test]
+    fn try_from_unit_hour() {
+        let unit1 = Unit::try_from("hour").unwrap();
+        assert_eq!(unit1.to_string(), "s");
+
+        let unit2 = Unit::try_from("hours").unwrap();
+        assert_eq!(unit2.to_string(), "s");
+    }
+
+    #[test]
+    fn try_from_unit_day() {
+        let unit1 = Unit::try_from("day").unwrap();
+        assert_eq!(unit1.to_string(), "s");
+
+        let unit2 = Unit::try_from("days").unwrap();
+        assert_eq!(unit2.to_string(), "s");
+    }
+
+    #[test]
+    fn try_from_unit_year() {
+        let unit1 = Unit::try_from("year").unwrap();
+        assert_eq!(unit1.to_string(), "s");
+
+        let unit2 = Unit::try_from("years").unwrap();
+        assert_eq!(unit2.to_string(), "s");
+    }
+
+    #[test]
+    fn mult_meter() {
+        let unit = Unit::try_from("meters").unwrap();
+        let out = (unit.clone() * unit).to_string();
+        assert_eq!(out, "m^2");
+    }
+
+    #[test]
+    fn mult_gram() {
+        let unit = Unit::try_from("grams").unwrap();
+        let out = (unit.clone() * unit).to_string();
+        assert_eq!(out, "g^2");
+    }
+
+    #[test]
+    fn mult_meters_grams() {
+        let meters = Unit::try_from("meters").unwrap();
+        let grams = Unit::try_from("grams").unwrap();
+        let result = (meters * grams).to_string();
+        assert_eq!(result, "m g");
+    }
+
+    #[test]
+    fn mult_second() {
+        let unit = Unit::try_from("seconds").unwrap();
+        let out = (unit.clone() * unit).to_string();
+        assert_eq!(out, "s^2");
+    }
+
+    #[test]
+    fn mult_ampere() {
+        let unit = Unit::try_from("amperes").unwrap();
+        let out = (unit.clone() * unit).to_string();
+        assert_eq!(out, "A^2");
+    }
+
+    #[test]
+    fn mult_ampere_second() {
+        let amperes = Unit::try_from("amperes").unwrap();
+        let second = Unit::try_from("second").unwrap();
+        let result = (amperes * second).to_string();
+        assert_eq!(result, "s A");
+    }
+
+    #[test]
+    fn mult_mole() {
+        let unit = Unit::try_from("moles").unwrap();
+        let out = (unit.clone() * unit).to_string();
+        assert_eq!(out, "M^2");
+    }
+
+    #[test]
+    fn mult_joule() {
+        let unit = Unit::try_from("joule").unwrap();
+        let out = (unit.clone() * unit).to_string();
+        assert_eq!(out, "m^4 g^2 s^-4");
+    }
+
+    #[test]
+    fn mult_joule_second() {
+        let joules = Unit::try_from("joule").unwrap();
+        let second = Unit::try_from("second").unwrap();
+        let result = (joules * second).to_string();
+        assert_eq!(result, "m^2 g s^-1");
+    }
+
+    #[test]
+    fn mult_newton() {
+        let unit = Unit::try_from("newton").unwrap();
+        let out = (unit.clone() * unit).to_string();
+        assert_eq!(out, "m^2 g^2 s^-4");
+    }
+
+    #[test]
+    fn div_meter() {
+        let mut unit1 = Unit::try_from("meters").unwrap();
+        unit1.exp = 4;
+
+        let mut unit2 = Unit::try_from("meters").unwrap();
+        unit2.exp = 2;
+
+        let out_unit = unit1 / unit2;
+        assert_eq!(out_unit.to_string(), "");
+        assert_eq!(out_unit.exp, 2);
+    }
+
+    #[test]
+    fn div_meter_cancellation() {
+        let unit = Unit::try_from("meters").unwrap();
+        let out = (unit.clone() / unit).to_string();
+
+        assert_eq!(out, "");
     }
 }

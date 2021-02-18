@@ -82,24 +82,9 @@ impl std::ops::Div<Val> for Val {
 
 impl Val {
     pub fn with_unit(&self, unit: &Unit) -> Val {
-        if self.unit.desc.is_empty() {
-            Val {
-                num: rug::Rational::from(&self.num * &unit.mult)
-                    * rug::Rational::try_from(10f64.powi(unit.exp as i32)).unwrap(),
-                unit: Unit {
-                    desc: unit.desc.clone(),
-                    ..Default::default()
-                },
-            }
-        } else {
-            Val {
-                num: rug::Rational::from(&self.num * &unit.mult)
-                    * rug::Rational::try_from(10f64.powi(unit.exp as i32)).unwrap(),
-                unit: Unit {
-                    desc: (self.unit.clone() * unit.clone()).desc,
-                    ..Default::default()
-                },
-            }
+        Val {
+            num: self.num.clone(),
+            unit: self.unit.clone() * unit.clone(),
         }
     }
 
