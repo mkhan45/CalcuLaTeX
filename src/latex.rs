@@ -1,5 +1,6 @@
-use crate::expr::unit_expr::{UnitExpr, UnitOp};
 use std::convert::TryFrom;
+
+use crate::expr::unit_expr::{UnitExpr, UnitOp};
 
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
@@ -15,15 +16,20 @@ pub enum LaTeX {
     Math(String),
 }
 
-#[derive(Debug)]
-pub enum FormatArgs {
-    UnitHint { string: String, value: Unit },
+pub struct FormatArgs {
+    pub unit_hint: Option<UnitExpr>,
+}
+
+impl Default for FormatArgs {
+    fn default() -> Self {
+        FormatArgs { unit_hint: None }
+    }
 }
 
 pub trait ToLaTeX {
-    fn to_latex_ext(&self, args: Option<&FormatArgs>) -> LaTeX;
+    fn to_latex_ext(&self, args: &FormatArgs) -> LaTeX;
     fn to_latex(&self) -> LaTeX {
-        self.to_latex_ext(None)
+        self.to_latex_ext(&FormatArgs::default())
     }
 }
 
@@ -37,7 +43,7 @@ impl ToString for LaTeX {
 }
 
 impl ToLaTeX for Expr {
-    fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
+    fn to_latex_ext(&self, _: &FormatArgs) -> LaTeX {
         match self {
             Expr::Atom(v) => LaTeX::Math(v.to_latex().to_string()),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
@@ -68,7 +74,7 @@ impl ToLaTeX for Expr {
                     b.to_latex().to_string()
                 )),
                 (Op::AddUnit(_, s), [v]) => {
-                    LaTeX::Math(format!("{}\\ {}", (v).to_latex().to_string(), s,))
+                    LaTeX::Math(format!("{}\\ {}", v.to_latex().to_string(), s))
                 }
                 _ => todo!(),
             },
@@ -77,7 +83,7 @@ impl ToLaTeX for Expr {
 }
 
 impl ToLaTeX for UnitExpr {
-    fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
+    fn to_latex_ext(&self, _: &FormatArgs) -> LaTeX {
         match self {
             UnitExpr::Atom(u) => LaTeX::Math(u.to_latex().to_string()),
             UnitExpr::Cons(op, e) => match (op, e.as_slice()) {
@@ -103,27 +109,28 @@ impl ToLaTeX for UnitExpr {
 }
 
 impl ToLaTeX for Val {
-    fn to_latex_ext(&self, args: Option<&FormatArgs>) -> LaTeX {
-        match args {
-            Some(FormatArgs::UnitHint {
-                string,
-                value: Unit { desc, exp, mult },
-            }) if desc == &self.unit.desc => {
+    fn to_latex_ext(&self, args: &FormatArgs) -> LaTeX {
+        match &args.unit_hint {
+            Some(unit_expr) if unit_expr.eval().desc == self.unit.desc => {
+                let unit_val = unit_expr.eval();
                 let out = format!(
                     "{} \\ {}",
                     (&self.num
-                        / rug::Rational::try_from(10f64.powi((*exp - self.unit.exp) as i32))
-                            .unwrap()
-                        / rug::Rational::from(mult / &self.unit.mult))
+                        / rug::Rational::try_from(
+                            10f64.powi((unit_val.exp - self.unit.exp) as i32)
+                        )
+                        .unwrap()
+                        / rug::Rational::from(unit_val.mult / &self.unit.mult))
                     .to_f64(),
-                    string
+                    unit_expr.to_latex().to_string()
                 );
                 LaTeX::Math(out.trim().to_string())
             }
-            Some(FormatArgs::UnitHint { string, .. }) => {
+            Some(unit_expr) => {
                 panic!(
                     "Unit hint {} does not match value with unit {}",
-                    string, self.unit
+                    unit_expr.eval().to_string(),
+                    self.unit
                 )
             }
             None => {
@@ -142,7 +149,7 @@ impl ToLaTeX for Val {
 }
 
 impl ToLaTeX for Unit {
-    fn to_latex_ext(&self, _: Option<&FormatArgs>) -> LaTeX {
+    fn to_latex_ext(&self, _: &FormatArgs) -> LaTeX {
         match self.desc.clone() {
             UnitDesc::Base(arr) => {
                 let mut numerator = Vec::new();

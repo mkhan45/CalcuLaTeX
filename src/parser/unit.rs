@@ -74,14 +74,14 @@ pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
     expr_bp(&mut r.into_inner(), 0)
 }
 
-fn unit_postfix_binding_power(op: &UnitOp) -> Option<(u8, ())> {
+pub fn unit_postfix_binding_power(op: &UnitOp) -> Option<(u8, ())> {
     Some(match op {
         UnitOp::Exp(_) => (3, ()),
         _ => return None,
     })
 }
 
-fn unit_infix_binding_power(op: &UnitOp) -> (u8, u8) {
+pub fn unit_infix_binding_power(op: &UnitOp) -> (u8, u8) {
     match op {
         UnitOp::Mul | UnitOp::Div => (1, 2),
         _ => panic!(),

@@ -1,3 +1,4 @@
+use crate::parser::naive_string::parse_naive_string;
 use pest::iterators::{Pair, Pairs};
 
 use crate::{
@@ -39,8 +40,9 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
                     Rule::unit_expr => {
+                        let naive_expr = parse_naive_string(nx.clone()).to_latex();
                         let unit_expr = parse_unit_expr(nx);
-                        Op::AddUnit(unit_expr.eval(), unit_expr.to_latex().to_string())
+                        Op::AddUnit(unit_expr.eval(), naive_expr.to_string())
                     }
                     _ => todo!(),
                 };

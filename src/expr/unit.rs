@@ -77,7 +77,7 @@ pub const BASE_UNITS: [BaseUnit; 7] = [
 // Custom is not implemented yet, but I plan for users
 // to be able to create custom units, in which case the
 // map would just be [unit_name -> power]
-#[derive(Clone)]
+#[derive(Clone, Eq, Hash)]
 pub enum UnitDesc {
     Base([Ratio<i8>; 7]),
     Custom(BTreeMap<String, Ratio<u8>>),
@@ -92,7 +92,7 @@ impl UnitDesc {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Unit {
     pub desc: UnitDesc,
     pub exp: i8,
