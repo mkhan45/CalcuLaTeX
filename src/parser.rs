@@ -4,13 +4,13 @@ use pest_derive::*;
 
 use crate::statement::Statement;
 
-use crate::latex::FormatArgs;
-
 pub mod unit;
 use unit::parse_unit_expr;
 
 pub mod expr;
 use expr::parse_expr;
+
+pub mod naive_string;
 
 #[derive(Parser)]
 #[grammar = "parser/grammar.pest"]
@@ -31,17 +31,9 @@ fn parse_print_stmt(r: Pair<Rule>) -> Statement {
     assert_eq!(r.as_rule(), Rule::print_expr);
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
-    let unit_hint = inner.next().map(|n| {
-        let s = n.as_str();
-        FormatArgs::UnitHint {
-            value: parse_unit_expr(n).eval(),
-            string: s.to_string(),
-        }
-    });
 
     Statement::PrintExpr {
         expr: parse_expr(lhs),
-        unit_hint,
     }
 }
 
@@ -50,18 +42,10 @@ fn parse_dec_print_stmt(r: Pair<Rule>) -> Statement {
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
     let rhs = inner.next().unwrap();
-    let unit_hint = inner.next().map(|n| {
-        let s = n.as_str();
-        FormatArgs::UnitHint {
-            value: parse_unit_expr(n).eval(),
-            string: s.to_string(),
-        }
-    });
 
     Statement::DecPrintExpr {
         lhs: lhs.as_str().to_string(),
         rhs: parse_expr(rhs),
-        unit_hint,
     }
 }
 

@@ -1,4 +1,5 @@
 pub mod val;
+
 use std::convert::TryInto;
 
 use val::*;
@@ -36,9 +37,10 @@ impl Expr {
                 if let Some(v) = scope.variables.get(n) {
                     v.clone()
                 } else {
+                    let unit: Unit = n.as_str().try_into().unwrap();
                     Val {
                         num: rug::Rational::from(1),
-                        unit: n.as_str().try_into().unwrap(),
+                        unit,
                     }
                 }
             }

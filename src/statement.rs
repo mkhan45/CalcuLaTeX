@@ -12,19 +12,9 @@ pub struct Scope {
 #[derive(Debug)]
 pub enum Statement {
     ExprStmt(Expr),
-    VarDec {
-        lhs: String,
-        rhs: Expr,
-    },
-    PrintExpr {
-        expr: Expr,
-        unit_hint: Option<FormatArgs>,
-    },
-    DecPrintExpr {
-        lhs: String,
-        rhs: Expr,
-        unit_hint: Option<FormatArgs>,
-    },
+    VarDec { lhs: String, rhs: Expr },
+    PrintExpr { expr: Expr },
+    DecPrintExpr { lhs: String, rhs: Expr },
     LineGap,
 }
 
@@ -85,7 +75,7 @@ impl State {
                         .variables
                         .insert(lhs.clone(), rhs.eval(&self.scope));
                 }
-                Statement::PrintExpr { expr, unit_hint } => {
+                Statement::PrintExpr { expr } => {
                     // Example: `5 * 10 kg = ? g` gets parsed roughly as
                     //
                     // ```
@@ -94,32 +84,30 @@ impl State {
                     //      unit_hint: Gram
                     // }
                     // ```
+                    let format_args = FormatArgs::default();
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
                             expr.to_latex().to_string().trim(),
                             expr.eval(&self.scope)
-                                .to_latex_ext(unit_hint.as_ref())
+                                .to_latex_ext(&format_args)
                                 .to_string()
                                 .trim_end(),
                         )
                         .as_str(),
                     );
                 }
-                Statement::DecPrintExpr {
-                    lhs,
-                    rhs,
-                    unit_hint,
-                } => {
+                Statement::DecPrintExpr { lhs, rhs } => {
                     // `DecPrintExpr` could probably be merged with `VarDec`,
                     // basically it's a combination of `PrintExpr` and `VarDec`
                     let val = rhs.eval(&self.scope);
+                    let format_args = FormatArgs::default();
                     self.output.push_str(
                         format!(
                             "${} = {} = {}$\\\\\n",
                             lhs.trim(),
                             rhs.to_latex().to_string().trim_end(),
-                            val.to_latex_ext(unit_hint.as_ref()).to_string().trim_end(),
+                            val.to_latex_ext(&format_args).to_string().trim_end(),
                         )
                         .as_str(),
                     );

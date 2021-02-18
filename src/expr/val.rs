@@ -14,7 +14,8 @@ impl std::fmt::Display for Val {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let out = format!(
             "{} {}",
-            self.num.to_f64().to_string(),
+            // lossy conversions since Val's Display isn't actually used
+            self.num.to_f64() * self.unit.mult.to_f64() * 10f64.powi(self.unit.exp as i32),
             self.unit.to_string()
         );
         write!(f, "{}", out.trim())
