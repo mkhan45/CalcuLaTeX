@@ -575,23 +575,52 @@ mod tests {
     }
 
     #[test]
-    fn div_meter() {
+    fn div_meter_gram() {
         let mut unit1 = Unit::try_from("meters").unwrap();
-        unit1.exp = 4;
-
-        let mut unit2 = Unit::try_from("meters").unwrap();
-        unit2.exp = 2;
-
-        let out_unit = unit1 / unit2;
-        assert_eq!(out_unit.to_string(), "");
-        assert_eq!(out_unit.exp, 2);
+        let mut unit2 = Unit::try_from("grams").unwrap();
+        assert_eq!((unit1 / unit2).to_string(), "m g^-1");
     }
 
     #[test]
-    fn div_meter_cancellation() {
-        let unit = Unit::try_from("meters").unwrap();
-        let out = (unit.clone() / unit).to_string();
-
-        assert_eq!(out, "");
+    fn div_joule_meter() {
+        let mut unit1 = Unit::try_from("joule").unwrap();
+        let mut unit2 = Unit::try_from("meter").unwrap();
+        assert_eq!((unit1 / unit2).to_string(), "m g s^-2");
     }
+
+    #[test]
+    fn div_joule_second() {
+        let mut unit1 = Unit::try_from("joule").unwrap();
+        let mut unit2 = Unit::try_from("second").unwrap();
+        assert_eq!((unit1 / unit2).to_string(), "m^2 g s^-3");
+    }
+
+    #[test]
+    fn div_ampere_second() {
+        let mut unit1 = Unit::try_from("ampere").unwrap();
+        let mut unit2 = Unit::try_from("second").unwrap();
+        assert_eq!((unit1 / unit2).to_string(), "s^-1 A");
+    }
+
+    #[test]
+    fn div_ampere_ampere() {
+        let mut unit1 = Unit::try_from("ampere").unwrap();
+        let mut unit2 = Unit::try_from("ampere").unwrap();
+        assert_eq!((unit1 / unit2).to_string(), "");
+    }
+
+    #[test]
+    fn div_meter_meter() {
+        let mut unit1 = Unit::try_from("meters").unwrap();
+        let mut unit2 = Unit::try_from("meters").unwrap();
+        assert_eq!((unit1 / unit2).to_string(), "");
+    }
+
+    #[test]
+    fn div_gram_gram() {
+        let mut unit1 = Unit::try_from("grams").unwrap();
+        let mut unit2 = Unit::try_from("grams").unwrap();
+        assert_eq!((unit1 / unit2).to_string(), "");
+    }
+    
 }
