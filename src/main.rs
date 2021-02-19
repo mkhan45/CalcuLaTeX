@@ -14,61 +14,6 @@ mod latex;
 
 use std::io::Write;
 
-#[cfg(test)]
-mod tests {
-    use std::convert::TryFrom;
-
-    use super::*;
-    use crate::expr::unit::Unit;
-
-    fn full_eval(s: &str) -> Val {
-        use crate::parser::expr::parse_expr;
-        use crate::parser::{MathParser, Rule};
-        use pest::Parser;
-        use statement::Scope;
-
-        let scope = Scope::default();
-
-        parse_expr(
-            MathParser::parse(Rule::expression, s)
-                .unwrap()
-                .next()
-                .unwrap(),
-        )
-        .eval(&scope)
-    }
-
-    #[test]
-    fn test_basic() {
-        assert_eq!(full_eval("5 - 3").to_string(), "2".to_string());
-        assert_eq!(full_eval("5 kg").to_string(), "5000 g".to_string());
-        assert_eq!(full_eval("5 grams").to_string(), "5 g".to_string());
-        assert_eq!(
-            full_eval("5 grams + 4 grams").to_string(),
-            "9 g".to_string()
-        );
-        assert_eq!(
-            full_eval("5")
-                .with_unit(&Unit::try_from("N").unwrap())
-                .to_string(),
-            "5000 m g s^-2".to_string()
-        );
-        // dbg!(full_eval("5 kilograms + 4 grams").unit.exp);
-        // assert_eq!(
-        //     full_eval("5 kilograms + 4 grams").to_string(),
-        //     "5004 g".to_string()
-        // );
-        assert_eq!(
-            full_eval("5 meters * 4 grams").to_string(),
-            "20 m g".to_string()
-        );
-        assert_eq!(
-            full_eval("5 meters / 4 grams").to_string(),
-            "1.25 m g^-1".to_string()
-        );
-    }
-}
-
 fn main() {
     // Usage: {cmd} [input_file] [output_pdf]
     let args = std::env::args().collect::<Vec<String>>();

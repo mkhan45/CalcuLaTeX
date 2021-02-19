@@ -4,6 +4,9 @@ use num::rational::Ratio;
 use num::{One, Zero};
 use std::fmt::Debug;
 
+use std::convert::TryFrom;
+use std::convert::TryInto;
+
 use std::collections::BTreeMap;
 
 use bimap::BiMap;
@@ -233,6 +236,24 @@ impl std::convert::TryFrom<&str> for Unit {
         })
     }
 }
+
+impl TryFrom<String> for Unit {
+    type Error = &'static str;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        s.as_str().try_into()
+    }
+}
+
+impl TryFrom<&String> for Unit {
+    type Error = &'static str;
+
+    fn try_from(s: &String) -> Result<Self, Self::Error> {
+        s.as_str().try_into()
+    }
+}
+
+
 
 impl From<BaseUnit> for Unit {
     fn from(b: BaseUnit) -> Self {
