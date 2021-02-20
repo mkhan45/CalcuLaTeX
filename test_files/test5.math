@@ -6,6 +6,10 @@ n_p = 50
 n_e = n_p
 n_n = 124 - 50 = ?
 
-m_{expected} = 123.9053 amu = ?
-m_{calculated} = n_p * m_p + n_e * m_e + n_n * m_n = ? amu
+m_{expected} = 123.9053 amu
+n_p * m_p = ? amu
+n_e * m_e = ? amu
+n_n * m_n = ? amu
+m_{calculated} = n_p * m_p + n_n * m_n + n_e * m_e = ? amu
+n_p * m_p + m_n * n_n = ? amu
 dm = m_{expected} - m_{calculated} = ? amu

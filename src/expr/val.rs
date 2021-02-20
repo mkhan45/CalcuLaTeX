@@ -53,8 +53,8 @@ impl std::ops::Add<Val> for Val {
                 larger_exp.num + (smaller_exp.num / 10f64.powi(add_exp as i32) * mult_factor);
             let mut exp = larger_exp.unit.exp;
             if num.abs() >= 10f64 {
-                exp = exp.signum() * (exp.abs() + (num / 10.0) as i64);
-                num /= 10.0;
+                exp += num.log10() as i64;
+                num /= 10f64.powi(num.log10() as i32);
             }
 
             Val {
@@ -89,9 +89,11 @@ impl std::ops::Sub<Val> for Val {
 
             let mut exp = larger_exp.unit.exp;
             if num.abs() >= 10f64 {
-                exp = exp.signum() * ((num / 10.0) as i64);
-                num /= 10.0;
+                exp += num.log10() as i64;
+                num /= 10f64.powi(num.log10() as i32);
             }
+
+            dbg!(self.num, rhs.num, self.unit.exp, rhs.unit.exp, num, exp);
 
             Val {
                 num,

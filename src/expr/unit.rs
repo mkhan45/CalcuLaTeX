@@ -129,11 +129,7 @@ impl Debug for Unit {
 
 impl Unit {
     pub fn empty() -> Self {
-        Unit {
-            desc: UnitDesc::Base([Ratio::zero(); 7]),
-            exp: 0,
-            mult: 1.0,
-        }
+        Self::default()
     }
 
     pub fn pow(&self, rhs: i8) -> Self {
