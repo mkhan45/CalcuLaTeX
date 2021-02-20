@@ -143,13 +143,8 @@ impl ToLaTeX for Val {
             None => {
                 let unit_str = self.unit.to_latex().to_string();
                 let out = if !unit_str.is_empty() {
-                    let unit_disp = Unit::try_from(self.unit.to_string()).unwrap();
                     // the exponent is encoded into the unit
-                    format!(
-                        "{} \\ {}",
-                        self.num * self.unit.mult / unit_disp.mult,
-                        unit_str
-                    )
+                    format!("{} \\ {}", self.num * self.unit.mult, unit_str)
                 } else {
                     self.num.to_string()
                 };

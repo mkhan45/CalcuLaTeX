@@ -27,6 +27,7 @@ pub enum Statement {
         unit_hint: Option<UnitHint>,
     },
     LineGap,
+    RawLaTeX(String),
 }
 
 #[derive(Default)]
@@ -56,6 +57,7 @@ impl State {
         for stmt in self.statements.iter() {
             match stmt {
                 Statement::LineGap => self.output.push_str("\\\\"),
+                Statement::RawLaTeX(s) => self.output.push_str(s),
                 Statement::ExprStmt(expr) => {
                     // expr statements don't really have a use since
                     // there are no functions with side effects

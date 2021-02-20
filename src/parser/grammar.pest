@@ -19,8 +19,9 @@ operation = @{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
-statement = { line_gap_stmt | (dec_print_expr | print_expr | var_dec | expression) ~ "\n" }
-    line_gap_stmt = { " "* ~ "\n" }
+statement = { latex_block | line_gap_stmt | (dec_print_expr | print_expr | var_dec | expression) ~ NEWLINE }
+    line_gap_stmt = { WHITESPACE* ~ NEWLINE }
+    latex_block = { "'''" ~ (!"'''" ~ ANY)* ~ "'''" }
     var_dec = { ident ~ "=" ~ expression }
     print_expr = { expression ~ "=" ~ "?" ~ unit_expr? }
     dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" ~ unit_expr? }

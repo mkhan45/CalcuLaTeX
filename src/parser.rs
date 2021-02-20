@@ -73,6 +73,12 @@ pub fn parse_block(s: &str) -> Vec<Statement> {
             Rule::print_expr => parse_print_stmt(stmt),
             Rule::dec_print_expr => parse_dec_print_stmt(stmt),
             Rule::line_gap_stmt => Statement::LineGap,
+            Rule::latex_block => Statement::RawLaTeX(
+                stmt.as_str()
+                    .trim_start_matches("'''")
+                    .trim_end_matches("'''")
+                    .to_owned(),
+            ),
             _ => unreachable!(),
         }
     })

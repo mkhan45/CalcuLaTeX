@@ -8,12 +8,20 @@ needs a better name
 ## Example
 
 ```
+'''
+Given a rock with mass $m_{rock}$ thrown by a force of $F_0$ acting over a duration $dt_{force}$,
+calculate its airtime and the max height it achieves.
+'''
+
+''' Given: '''
 g = 9.81 m/s^2
-mass = 10 kg
+m_{rock} = 10 kg
 F_0 = 1000 N
 dt_{force} = 0.1 s
 
-y_{vel} = F_0 / mass * dt_{force} = ?
+
+''' Solution: '''
+y_{vel} = F_0 / m_{rock} * dt_{force} = ?
 
 airtime = y_{vel} / g * 2 = ?
 height_{max} = y_{vel} * airtime / 4 = ? cm
