@@ -51,9 +51,15 @@ fn parse_dec_print_stmt(r: Pair<Rule>) -> Statement {
     let lhs = inner.next().unwrap();
     let rhs = inner.next().unwrap();
 
+    let unit_hint = inner.next().map(|r| UnitHint {
+        unit: parse_unit_expr(r.clone()).eval(),
+        pretty_string: parse_naive_string(r),
+    });
+
     Statement::DecPrintExpr {
         lhs: lhs.as_str().to_string(),
         rhs: parse_expr(rhs),
+        unit_hint,
     }
 }
 

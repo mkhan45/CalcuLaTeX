@@ -18,5 +18,3 @@ notify = "4.0.15"
 lazy_static = "1.4.0"
 
 bimap = "0.6.0"
-
-rug = "1.11.0"

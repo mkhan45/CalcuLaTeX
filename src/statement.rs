@@ -24,6 +24,7 @@ pub enum Statement {
     DecPrintExpr {
         lhs: String,
         rhs: Expr,
+        unit_hint: Option<UnitHint>,
     },
     LineGap,
 }
@@ -110,11 +111,18 @@ impl State {
                         .as_str(),
                     );
                 }
-                Statement::DecPrintExpr { lhs, rhs } => {
+                Statement::DecPrintExpr {
+                    lhs,
+                    rhs,
+                    unit_hint,
+                } => {
                     // `DecPrintExpr` could probably be merged with `VarDec`,
                     // basically it's a combination of `PrintExpr` and `VarDec`
                     let val = rhs.eval(&self.scope);
-                    let format_args = FormatArgs::default();
+                    let format_args = FormatArgs {
+                        unit_hint: unit_hint.clone(),
+                    };
+
                     self.output.push_str(
                         format!(
                             "${} = {} = {}$\\\\\n",

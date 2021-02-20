@@ -1,4 +1,4 @@
-use rug::{self, ops::Pow};
+use num::traits::Pow;
 use std::convert::TryFrom;
 
 use super::unit::Unit;
@@ -164,7 +164,7 @@ where
     V: Into<f64>,
     U: Into<Unit>,
 {
-    type Error = rug::rational::TryFromFloatError;
+    type Error = &'static str;
 
     fn try_from((v, u): (V, U)) -> Result<Self, Self::Error> {
         Ok(Val {
