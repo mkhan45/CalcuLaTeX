@@ -1,3 +1,5 @@
+use crate::latex::UnitHint;
+use crate::parser::naive_string::parse_naive_string;
 use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::*;
@@ -32,8 +34,14 @@ fn parse_print_stmt(r: Pair<Rule>) -> Statement {
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
 
+    let unit_hint = inner.next().map(|r| UnitHint {
+        unit: parse_unit_expr(r.clone()).eval(),
+        pretty_string: parse_naive_string(r),
+    });
+
     Statement::PrintExpr {
         expr: parse_expr(lhs),
+        unit_hint,
     }
 }
 

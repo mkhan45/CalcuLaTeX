@@ -1,4 +1,5 @@
 use crate::latex::FormatArgs;
+use crate::latex::UnitHint;
 use std::collections::BTreeMap;
 
 use crate::{expr::Expr, latex::ToLaTeX};
@@ -12,9 +13,18 @@ pub struct Scope {
 #[derive(Debug)]
 pub enum Statement {
     ExprStmt(Expr),
-    VarDec { lhs: String, rhs: Expr },
-    PrintExpr { expr: Expr },
-    DecPrintExpr { lhs: String, rhs: Expr },
+    VarDec {
+        lhs: String,
+        rhs: Expr,
+    },
+    PrintExpr {
+        expr: Expr,
+        unit_hint: Option<UnitHint>,
+    },
+    DecPrintExpr {
+        lhs: String,
+        rhs: Expr,
+    },
     LineGap,
 }
 
@@ -75,7 +85,7 @@ impl State {
                         .variables
                         .insert(lhs.clone(), rhs.eval(&self.scope));
                 }
-                Statement::PrintExpr { expr } => {
+                Statement::PrintExpr { expr, unit_hint } => {
                     // Example: `5 * 10 kg = ? g` gets parsed roughly as
                     //
                     // ```
@@ -84,7 +94,10 @@ impl State {
                     //      unit_hint: Gram
                     // }
                     // ```
-                    let format_args = FormatArgs::default();
+                    let format_args = FormatArgs {
+                        unit_hint: unit_hint.clone(),
+                    };
+
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",

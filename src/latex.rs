@@ -1,4 +1,7 @@
-use crate::expr::unit_expr::{UnitExpr, UnitOp};
+use crate::{
+    expr::unit_expr::{UnitExpr, UnitOp},
+    parser::naive_string::StringExpr,
+};
 
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
@@ -14,8 +17,14 @@ pub enum LaTeX {
     Math(String),
 }
 
+#[derive(Debug, Clone)]
+pub struct UnitHint {
+    pub unit: Unit,
+    pub pretty_string: StringExpr,
+}
+
 pub struct FormatArgs {
-    pub unit_hint: Option<UnitExpr>,
+    pub unit_hint: Option<UnitHint>,
 }
 
 impl Default for FormatArgs {
@@ -109,21 +118,23 @@ impl ToLaTeX for UnitExpr {
 impl ToLaTeX for Val {
     fn to_latex_ext(&self, args: &FormatArgs) -> LaTeX {
         match &args.unit_hint {
-            Some(unit_expr) if unit_expr.eval().desc == self.unit.desc => {
-                let unit_val = unit_expr.eval();
+            Some(UnitHint {
+                unit,
+                pretty_string,
+            }) if unit.desc == self.unit.desc => {
                 let out = format!(
                     "{} \\ {}",
                     (self.num
-                        / 10f64.powi((unit_val.exp - self.unit.exp) as i32)
-                        / (unit_val.mult / self.unit.mult)),
-                    unit_expr.to_latex().to_string()
+                        / 10f64.powi((unit.exp - self.unit.exp) as i32)
+                        / (unit.mult / self.unit.mult)),
+                    pretty_string.to_latex().to_string()
                 );
                 LaTeX::Math(out.trim().to_string())
             }
-            Some(unit_expr) => {
+            Some(UnitHint { unit, .. }) => {
                 panic!(
                     "Unit hint {} does not match value with unit {}",
-                    unit_expr.eval().to_string(),
+                    unit.to_string(),
                     self.unit
                 )
             }

@@ -5,7 +5,7 @@ use pest::iterators::{Pair, Pairs};
 
 use crate::{expr::unit_expr::UnitOp, latex::*};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum StringExpr {
     Atom(String),
     Cons(UnitOp, Vec<StringExpr>),
