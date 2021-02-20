@@ -1,7 +1,7 @@
 pub mod val;
 
-use std::convert::TryInto;
 use std::convert::TryFrom;
+use std::convert::TryInto;
 
 use val::*;
 
@@ -38,7 +38,7 @@ impl Expr {
                 if let Some(v) = scope.variables.get(n) {
                     v.clone()
                 } else {
-                    (1,Unit::try_from(n).unwrap()).try_into().unwrap()
+                    (1, Unit::try_from(n).unwrap()).try_into().unwrap()
                 }
             }
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {

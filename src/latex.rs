@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use crate::expr::unit_expr::{UnitExpr, UnitOp};
 
 use crate::expr::unit::BASE_UNITS;
@@ -115,11 +113,9 @@ impl ToLaTeX for Val {
                 let unit_val = unit_expr.eval();
                 let out = format!(
                     "{} \\ {}",
-                    (
-                        self.num / 
-                        10f64.powi((unit_val.exp - self.unit.exp) as i32) / 
-                        (unit_val.mult / &self.unit.mult).to_f64()
-                    ),
+                    (self.num
+                        / 10f64.powi((unit_val.exp - self.unit.exp) as i32)
+                        / (unit_val.mult / self.unit.mult)),
                     unit_expr.to_latex().to_string()
                 );
                 LaTeX::Math(out.trim().to_string())
@@ -133,7 +129,7 @@ impl ToLaTeX for Val {
             }
             None => {
                 let unit_str = self.unit.to_latex().to_string();
-                let num = self.num * self.unit.mult.to_f64() * 10f64.powi(self.unit.exp as i32);
+                let num = self.num * self.unit.mult * 10f64.powi(self.unit.exp as i32);
                 let out = if !unit_str.is_empty() {
                     format!("{} \\ {}", num, unit_str)
                 } else {

@@ -2,7 +2,6 @@ use crate::parser::naive_string::parse_naive_string;
 use pest::iterators::{Pair, Pairs};
 
 use crate::{
-    expr::unit::Unit,
     expr::val::Val,
     expr::{Expr, Op},
     parser::{parse_unit_expr, Rule},
@@ -16,8 +15,8 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
     fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> Expr {
         if let Some(nx) = inp.next() {
             let mut lhs = match nx.as_rule() {
-                Rule::number     => Expr::Atom(Val::empty(nx.as_str().trim().parse::<f64>().unwrap())),
-                Rule::ident      => Expr::Ident(nx.as_str().trim().to_string()),
+                Rule::number => Expr::Atom(Val::empty(nx.as_str().trim().parse::<f64>().unwrap())),
+                Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
                 Rule::expression => parse_expr(nx),
                 _ => {
                     dbg!(nx);
@@ -95,65 +94,73 @@ mod test {
     use super::*;
 
     use crate::{
-        statement::Scope,
         expr::unit::Unit,
-        parser::{
-            Rule,
-            MathParser,
-            expr::parse_expr
-        },
+        parser::{expr::parse_expr, MathParser, Rule},
+        statement::Scope,
     };
 
-    use std::convert::TryFrom;
     use pest::Parser;
 
     fn full_eval(s: &str) -> Val {
-        parse_expr(MathParser::parse(Rule::expression, s)
-            .unwrap()
-            .next()
-            .unwrap())
+        parse_expr(
+            MathParser::parse(Rule::expression, s)
+                .unwrap()
+                .next()
+                .unwrap(),
+        )
         .eval(&Scope::default())
     }
 
+    impl PartialEq<&str> for Val {
+        fn eq(&self, s: &&str) -> bool {
+            &self.to_string().as_str() == s
+        }
+    }
+
     #[test]
-    fn basic_sub(){
+    fn basic_sub() {
         assert_eq!(full_eval("5 - 3"), "2");
         assert_eq!(full_eval("5 m - 1 m"), "4 m");
         assert_eq!(full_eval("5 grams - 3 g"), "2 g");
     }
 
     #[test]
-    fn basic_add(){
+    fn basic_add() {
         assert_eq!(full_eval("5 + 3"), "8");
         assert_eq!(full_eval("5 m + 1 m"), "6 m");
         assert_eq!(full_eval("5 grams + 3 g"), "8 g");
     }
 
     #[test]
-    fn basic_div(){
+    fn basic_div() {
         assert_eq!(full_eval("4 / 2"), "2");
         assert_eq!(full_eval("9 m / 3 meters"), "3");
         assert_eq!(full_eval("12 grams / 4 g"), "3");
     }
 
     #[test]
-    fn basic_mult(){
+    fn basic_mult() {
         assert_eq!(full_eval("4 * 2"), "8");
         assert_eq!(full_eval("2 m * 3 meters"), "6 m^2");
         assert_eq!(full_eval("1 grams * 4 g"), "4 g^2");
     }
 
     #[test]
-    fn complex_sub(){
-        // TODO: Shouldn't this be `1500 m g s^-2` ?
-        assert_eq!(full_eval("2 N - 0.5 N"), "1.5 m g s^-2");
+    fn complex_sub() {
+        assert_eq!(full_eval("2 N - 0.5 N"), "1500 m g s^-2");
         assert_eq!(full_eval("2 N"), "2000 m g s^-2");
+        assert_eq!(full_eval("2 kN - 1 centinewton"), "1999990 m g s^-2");
     }
 
     #[test]
-    fn complex_add(){
-        // TODO: Shouldn't this be `2500 m g s^-2` ?
-        assert_eq!(full_eval("2 N + 0.5 N"), "502000000 m g s^-2");
+    fn complex_add() {
+        assert_eq!(full_eval("2 N + 0.5 N"), "2500 m g s^-2");
+        assert_eq!(full_eval("2 kN + 1 centinewton"), "2000010 m g s^-2");
     }
 
+    #[test]
+    fn complex_add_neg() {
+        assert_eq!(full_eval("2 N + -0.5 N"), "1500 m g s^-2");
+        assert_eq!(full_eval("2 kN + -1 centinewton"), "1999990 m g s^-2");
+    }
 }
