@@ -179,17 +179,20 @@ impl ToLaTeX for Unit {
                 if numerator_string.is_empty() && denominator_string.is_empty() {
                     LaTeX::Math("".to_string())
                 } else if numerator_string.is_empty() {
-                    LaTeX::Math(format!(
-                        "\\frac{{1}}{{{}{}}}",
-                        UNIT_PREFIXES_ABBR.get_by_right(&self.exp).unwrap(),
-                        denominator_string
-                    ))
+                    if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
+                        LaTeX::Math(format!("\\frac{{1}}{{{}{}}}", prefix, denominator_string))
+                    } else {
+                        LaTeX::Math(format!(
+                            "\\frac{{1}}{{{}\\times 10^{{{}}}}}",
+                            denominator_string, self.exp
+                        ))
+                    }
                 } else if denominator.is_empty() {
-                    LaTeX::Math(format!(
-                        "{}{}",
-                        UNIT_PREFIXES_ABBR.get_by_right(&self.exp).unwrap(),
-                        numerator_string
-                    ))
+                    if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
+                        LaTeX::Math(format!("{}{}", prefix, numerator_string))
+                    } else {
+                        LaTeX::Math(format!("{}\\times 10^{{{}}}", numerator_string, self.exp))
+                    }
                 } else {
                     LaTeX::Math(format!(
                         "\\frac{{{}{}}}{{{}}}",

@@ -14,7 +14,7 @@ use bimap::BiMap;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    pub static ref UNIT_PREFIXES: BiMap<&'static str, i8> = {
+    pub static ref UNIT_PREFIXES: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
         m.insert("centi", -2);
         m.insert("deci", -1);
@@ -24,7 +24,7 @@ lazy_static! {
         m.insert("kilo", 3);
         m
     };
-    pub static ref UNIT_PREFIXES_ABBR: BiMap<&'static str, i8> = {
+    pub static ref UNIT_PREFIXES_ABBR: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
         m.insert("c", -2);
         m.insert("d", -1);
@@ -107,7 +107,7 @@ impl UnitDesc {
 #[derive(Clone, PartialEq)]
 pub struct Unit {
     pub desc: UnitDesc,
-    pub exp: i8,
+    pub exp: i64,
     pub mult: f64,
 }
 
@@ -164,7 +164,7 @@ impl std::convert::TryFrom<&str> for Unit {
                     })
                     .unwrap_or((s.trim(), &0))
             } else {
-                (s, &0i8)
+                (s, &0)
             };
 
             let base = match stripped {
