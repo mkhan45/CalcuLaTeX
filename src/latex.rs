@@ -115,13 +115,11 @@ impl ToLaTeX for Val {
                 let unit_val = unit_expr.eval();
                 let out = format!(
                     "{} \\ {}",
-                    (&self.num
-                        / rug::Rational::try_from(
-                            10f64.powi((unit_val.exp - self.unit.exp) as i32)
-                        )
-                        .unwrap()
-                        / rug::Rational::from(unit_val.mult / &self.unit.mult))
-                    .to_f64(),
+                    (
+                        self.num / 
+                        10f64.powi((unit_val.exp - self.unit.exp) as i32) / 
+                        (unit_val.mult / &self.unit.mult).to_f64()
+                    ),
                     unit_expr.to_latex().to_string()
                 );
                 LaTeX::Math(out.trim().to_string())
@@ -135,12 +133,11 @@ impl ToLaTeX for Val {
             }
             None => {
                 let unit_str = self.unit.to_latex().to_string();
-                let num = rug::Rational::from(&self.num * &self.unit.mult)
-                    * &rug::Rational::try_from(10f64.powi(self.unit.exp as i32)).unwrap();
+                let num = self.num * self.unit.mult.to_f64() * 10f64.powi(self.unit.exp as i32);
                 let out = if !unit_str.is_empty() {
-                    format!("{} \\ {}", num.to_f64(), unit_str)
+                    format!("{} \\ {}", num, unit_str)
                 } else {
-                    num.to_f64().to_string()
+                    num.to_string()
                 };
                 LaTeX::Math(out.trim().to_string())
             }
