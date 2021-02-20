@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::{
     expr::unit_expr::{UnitExpr, UnitOp},
     parser::naive_string::StringExpr,
@@ -141,7 +143,13 @@ impl ToLaTeX for Val {
             None => {
                 let unit_str = self.unit.to_latex().to_string();
                 let out = if !unit_str.is_empty() {
-                    format!("{} \\ {}", self.num, unit_str)
+                    let unit_disp = Unit::try_from(self.unit.to_string()).unwrap();
+                    // the exponent is encoded into the unit
+                    format!(
+                        "{} \\ {}",
+                        self.num * self.unit.mult / unit_disp.mult,
+                        unit_str
+                    )
                 } else {
                     self.num.to_string()
                 };
