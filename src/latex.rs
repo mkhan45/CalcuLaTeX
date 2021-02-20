@@ -204,12 +204,17 @@ impl ToLaTeX for Unit {
                         LaTeX::Math(format!("{}\\times 10^{{{}}}", numerator_string, self.exp))
                     }
                 } else {
-                    LaTeX::Math(format!(
-                        "\\frac{{{}{}}}{{{}}}",
-                        UNIT_PREFIXES_ABBR.get_by_right(&self.exp).unwrap(),
-                        numerator_string,
-                        denominator_string
-                    ))
+                    if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
+                        LaTeX::Math(format!(
+                            "\\frac{{{}{}}}{{{}}}",
+                            prefix, numerator_string, denominator_string
+                        ))
+                    } else {
+                        LaTeX::Math(format!(
+                            "\\frac{{{}}}{{{}}}\\times 10^{{{}}}",
+                            numerator_string, denominator_string, self.exp
+                        ))
+                    }
                 }
             }
             UnitDesc::Custom(_map) => {

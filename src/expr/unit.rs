@@ -16,6 +16,7 @@ use lazy_static::lazy_static;
 lazy_static! {
     pub static ref UNIT_PREFIXES: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
+        m.insert("milli", -3);
         m.insert("centi", -2);
         m.insert("deci", -1);
         m.insert("deca", 1);
@@ -26,6 +27,7 @@ lazy_static! {
     };
     pub static ref UNIT_PREFIXES_ABBR: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
+        m.insert("m", -3);
         m.insert("c", -2);
         m.insert("d", -1);
         m.insert("de", 1);
@@ -95,6 +97,20 @@ impl PartialEq for UnitDesc {
     }
 }
 
+impl From<[i8; 7]> for UnitDesc {
+    fn from(a: [i8; 7]) -> Self {
+        UnitDesc::Base([
+            a[0].into(),
+            a[1].into(),
+            a[2].into(),
+            a[3].into(),
+            a[4].into(),
+            a[5].into(),
+            a[6].into(),
+        ])
+    }
+}
+
 impl UnitDesc {
     pub fn is_empty(&self) -> bool {
         match self {
@@ -148,7 +164,10 @@ impl std::convert::TryFrom<&str> for Unit {
             // stripped and added to the exponent.
             // Unfortunately, some units start with an abbreviated SI prefix so they
             // have to be hardcoded out.
-            let (stripped, exp) = if !matches!(s, "day" | "days" | "hours" | "hour") {
+            let (stripped, exp) = if !matches!(
+                s,
+                "day" | "days" | "hours" | "hour" | "meters" | "meter" | "m"
+            ) {
                 UNIT_PREFIXES
                     .iter()
                     .chain(UNIT_PREFIXES_ABBR.iter())
@@ -172,28 +191,12 @@ impl std::convert::TryFrom<&str> for Unit {
                 "moles" | "mols" | "mol" | "mole" | "M" => BaseUnit::Mole.into(),
                 "candela" => BaseUnit::Candela.into(),
                 "J" | "joule" => Unit {
-                    desc: UnitDesc::Base([
-                        Ratio::from(2),
-                        Ratio::one(),
-                        Ratio::from(-2),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                    ]),
+                    desc: [2, 1, -2, 0, 0, 0, 0].into(),
                     exp: 0,
                     mult: 1.0,
                 },
                 "N" | "newton" => Unit {
-                    desc: UnitDesc::Base([
-                        Ratio::one(),
-                        Ratio::one(),
-                        Ratio::from(-2),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                        Ratio::zero(),
-                    ]),
+                    desc: [1, 1, -2, 0, 0, 0, 0].into(),
                     exp: 3,
                     mult: 1.0,
                 },
@@ -218,8 +221,13 @@ impl std::convert::TryFrom<&str> for Unit {
                     exp: -24,
                     ..BaseUnit::Gram.into()
                 },
+                "L" | "liter" => Unit {
+                    desc: [3, 0, 0, 0, 0, 0, 0].into(),
+                    exp: -3,
+                    mult: 1.0,
+                },
                 _ => {
-                    dbg!(s);
+                    dbg!(s, stripped);
                     return Err("Bad unit");
                 }
             };

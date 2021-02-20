@@ -93,8 +93,6 @@ impl std::ops::Sub<Val> for Val {
                 num /= 10f64.powi(num.log10() as i32);
             }
 
-            dbg!(self.num, rhs.num, self.unit.exp, rhs.unit.exp, num, exp);
-
             Val {
                 num,
                 unit: Unit {
