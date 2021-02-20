@@ -140,11 +140,10 @@ impl ToLaTeX for Val {
             }
             None => {
                 let unit_str = self.unit.to_latex().to_string();
-                let num = self.num * self.unit.mult * 10f64.powi(self.unit.exp as i32);
                 let out = if !unit_str.is_empty() {
-                    format!("{} \\ {}", num, unit_str)
+                    format!("{} \\ {}", self.num, unit_str)
                 } else {
-                    num.to_string()
+                    self.num.to_string()
                 };
                 LaTeX::Math(out.trim().to_string())
             }
