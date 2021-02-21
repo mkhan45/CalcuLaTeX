@@ -1,4 +1,6 @@
 x = 5
+!digits 5
+
 '''
 test
 '''

@@ -1,3 +1,4 @@
+integer = @{ ASCII_DIGIT+ }
 number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
 ident = @{ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_" | "{" | "}" )* }
 
@@ -19,14 +20,16 @@ operation = @{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
-statement = { latex_block | line_gap_stmt | (dec_print_expr | print_expr | var_dec | expression) ~ NEWLINE }
+statement = { latex_block | format_directive | line_gap_stmt | (dec_print_expr | print_expr | var_dec | expression) ~ NEWLINE }
     line_gap_stmt = { WHITESPACE* ~ NEWLINE }
     latex_block = { "'''" ~ (!"'''" ~ ANY)* ~ "'''" }
     var_dec = { ident ~ "=" ~ expression }
     print_expr = { expression ~ "=" ~ "?" ~ unit_expr? }
     dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" ~ unit_expr? }
+    format_directive = _{ "!" ~ digit_set }
+        digit_set = { "digits" ~ " "* ~ integer }
 
-program = _{ "\n"* ~ statement ~ sub_program* }
+program = _{ NEWLINE* ~ statement ~ sub_program* }
     sub_program = _{ statement ~ sub_program* }
 
 WHITESPACE = _{ " " | "\t" }

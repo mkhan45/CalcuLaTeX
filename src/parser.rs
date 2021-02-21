@@ -63,12 +63,20 @@ fn parse_dec_print_stmt(r: Pair<Rule>) -> Statement {
     }
 }
 
+fn parse_digit_set(r: Pair<Rule>) -> Statement {
+    assert_eq!(r.as_rule(), Rule::digit_set);
+    let mut inner = r.into_inner();
+    let n_digits = inner.next().unwrap().as_str().parse::<usize>().unwrap();
+    Statement::DigitSet(n_digits)
+}
+
 pub fn parse_block(s: &str) -> Vec<Statement> {
     let inp = MathParser::parse(Rule::program, s).unwrap();
     inp.map(|s| {
         let stmt = s.into_inner().next().unwrap();
         match stmt.as_rule() {
             Rule::expression => Statement::ExprStmt(parse_expr(stmt)),
+            Rule::digit_set => parse_digit_set(stmt),
             Rule::var_dec => parse_var_dec(stmt),
             Rule::print_expr => parse_print_stmt(stmt),
             Rule::dec_print_expr => parse_dec_print_stmt(stmt),

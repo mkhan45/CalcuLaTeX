@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use crate::{
     expr::unit_expr::{UnitExpr, UnitOp},
     parser::naive_string::StringExpr,
@@ -27,11 +25,15 @@ pub struct UnitHint {
 
 pub struct FormatArgs {
     pub unit_hint: Option<UnitHint>,
+    pub max_digits: usize,
 }
 
 impl Default for FormatArgs {
     fn default() -> Self {
-        FormatArgs { unit_hint: None }
+        FormatArgs {
+            unit_hint: None,
+            max_digits: 3,
+        }
     }
 }
 
@@ -125,7 +127,8 @@ impl ToLaTeX for Val {
                 pretty_string,
             }) if unit.desc == self.unit.desc => {
                 let out = format!(
-                    "{} \\ {}",
+                    "{:.*} \\ {}",
+                    args.max_digits,
                     (self.num
                         / 10f64.powi((unit.exp - self.unit.exp) as i32)
                         / (unit.mult / self.unit.mult)),
@@ -144,7 +147,12 @@ impl ToLaTeX for Val {
                 let unit_str = self.unit.to_latex().to_string();
                 let out = if !unit_str.is_empty() {
                     // the exponent is encoded into the unit
-                    format!("{} \\ {}", self.num * self.unit.mult, unit_str)
+                    format!(
+                        "{:.*} \\ {}",
+                        args.max_digits,
+                        self.num * self.unit.mult,
+                        unit_str
+                    )
                 } else {
                     self.num.to_string()
                 };

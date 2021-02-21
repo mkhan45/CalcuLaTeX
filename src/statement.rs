@@ -26,6 +26,7 @@ pub enum Statement {
         rhs: Expr,
         unit_hint: Option<UnitHint>,
     },
+    DigitSet(usize),
     LineGap,
     RawLaTeX(String),
 }
@@ -40,6 +41,7 @@ pub struct State {
     pub statements: Vec<Statement>,
     // The LaTeX output buffer
     pub output: String,
+    pub format_args: FormatArgs,
 }
 
 impl State {
@@ -50,6 +52,7 @@ impl State {
             scope: Scope::default(),
             statements: parser::parse_block(&contents),
             output,
+            format_args: FormatArgs::default(),
         }
     }
 
@@ -57,6 +60,7 @@ impl State {
         for stmt in self.statements.iter() {
             match stmt {
                 Statement::LineGap => self.output.push_str("\\\\"),
+                Statement::DigitSet(n) => self.format_args.max_digits = *n,
                 Statement::RawLaTeX(s) => self.output.push_str(s),
                 Statement::ExprStmt(expr) => {
                     // expr statements don't really have a use since
@@ -99,6 +103,7 @@ impl State {
                     // ```
                     let format_args = FormatArgs {
                         unit_hint: unit_hint.clone(),
+                        ..self.format_args
                     };
 
                     self.output.push_str(
@@ -123,6 +128,7 @@ impl State {
                     let val = rhs.eval(&self.scope);
                     let format_args = FormatArgs {
                         unit_hint: unit_hint.clone(),
+                        ..self.format_args
                     };
 
                     self.output.push_str(
