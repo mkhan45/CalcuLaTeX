@@ -2,16 +2,6 @@
 
 use notify::{self, Watcher};
 
-mod parser;
-
-mod expr;
-use expr::val::Val;
-
-mod statement;
-use statement::State;
-
-mod latex;
-
 use std::io::Write;
 
 fn main() {
@@ -30,12 +20,10 @@ fn main() {
         println!("rebuilding pdf");
         let contents = std::fs::read_to_string(filename).unwrap();
 
-        let mut state = State::new(&contents);
-
-        state.exec();
+        let output = calculatex::generate_latex(&contents);
 
         let mut md_file = tempfile::NamedTempFile::new().unwrap();
-        write!(md_file, "{}", state.output).unwrap();
+        write!(md_file, "{}", output).unwrap();
 
         let mut pandoc = pandoc::new();
         pandoc.set_input_format(pandoc::InputFormat::Latex, Vec::new());

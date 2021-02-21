@@ -2,8 +2,8 @@ use crate::latex::FormatArgs;
 use crate::latex::UnitHint;
 use std::collections::BTreeMap;
 
+use crate::{expr::val::Val, parser};
 use crate::{expr::Expr, latex::ToLaTeX};
-use crate::{parser, Val};
 
 #[derive(Default)]
 pub struct Scope {
