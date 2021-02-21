@@ -1,9 +1,7 @@
-# math_lang
+# CalcuLaTeX
 pretty printing calculator language
 
 Kind of like smart LaTeX
-
-needs a better name
 
 ## Example
 

@@ -159,6 +159,7 @@ impl std::convert::TryFrom<&str> for Unit {
     type Error = &'static str;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
+        let s = s.trim();
         Ok({
             // Find if the unit starts with an SI prefix, in which case it should be
             // stripped and added to the exponent.
@@ -192,7 +193,7 @@ impl std::convert::TryFrom<&str> for Unit {
                 "candela" => BaseUnit::Candela.into(),
                 "J" | "joule" => Unit {
                     desc: [2, 1, -2, 0, 0, 0, 0].into(),
-                    exp: 0,
+                    exp: 3,
                     mult: 1.0,
                 },
                 "N" | "newton" => Unit {
