@@ -169,7 +169,7 @@ impl ToLaTeX for Val {
                         unit_str
                     )
                 } else {
-                    self.num.to_string()
+                    (self.num * 10f64.powi(self.unit.exp as i32)).to_string()
                 };
                 LaTeX::Math(out.trim().to_string())
             }
