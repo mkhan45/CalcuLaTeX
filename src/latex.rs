@@ -56,38 +56,38 @@ impl ToString for LaTeX {
 }
 
 impl ToLaTeX for Expr {
-    fn to_latex_ext(&self, _: &FormatArgs) -> LaTeX {
+    fn to_latex_ext(&self, args: &FormatArgs) -> LaTeX {
         match self {
-            Expr::Atom(v) => LaTeX::Math(v.to_latex().to_string()),
+            Expr::Atom(v) => LaTeX::Math(v.to_latex_ext(args).to_string()),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
             Expr::Cons(op, e) => match (op, e.as_slice()) {
                 (Op::Plus, [a, b, ..]) => LaTeX::Math(format!(
                     "({} + {})",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex_ext(args).to_string(),
+                    b.to_latex_ext(args).to_string()
                 )),
                 (Op::Minus, [a, b, ..]) => LaTeX::Math(format!(
                     "({} - {})",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex_ext(args).to_string(),
+                    b.to_latex_ext(args).to_string()
                 )),
                 (Op::Mul, [a, b, ..]) => LaTeX::Math(format!(
                     "{} \\times {}",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex_ext(args).to_string(),
+                    b.to_latex_ext(args).to_string()
                 )),
                 (Op::Div, [a, b, ..]) => LaTeX::Math(format!(
                     "\\frac{{{}}}{{{}}}",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex_ext(args).to_string(),
+                    b.to_latex_ext(args).to_string()
                 )),
                 (Op::Exp, [a, b, ..]) => LaTeX::Math(format!(
                     "{}^{{{}}}",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex_ext(args).to_string(),
+                    b.to_latex_ext(args).to_string()
                 )),
                 (Op::AddUnit(_, s), [v]) => {
-                    LaTeX::Math(format!("{}\\ {}", v.to_latex().to_string(), s))
+                    LaTeX::Math(format!("{}\\ {}", v.to_latex_ext(args).to_string(), s))
                 }
                 _ => todo!(),
             },
@@ -157,7 +157,6 @@ impl ToLaTeX for Val {
             }
             None => {
                 let out = {
-                    dbg!(self.num);
                     // TODO don't round this
                     let largest_power = self.unit.desc.largest_power().round().to_i64().unwrap();
 

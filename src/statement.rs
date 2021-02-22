@@ -86,7 +86,7 @@ impl State {
                         format!(
                             "${} = {}$\\\\\n",
                             lhs.trim(),
-                            rhs.to_latex().to_string().trim_end(),
+                            rhs.to_latex_ext(&self.format_args).to_string().trim_end(),
                         )
                         .as_str(),
                     );
@@ -111,7 +111,7 @@ impl State {
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
-                            expr.to_latex().to_string().trim(),
+                            expr.to_latex_ext(&self.format_args).to_string().trim(),
                             expr.eval(&self.scope)
                                 .to_latex_ext(&format_args)
                                 .to_string()
@@ -137,7 +137,7 @@ impl State {
                         format!(
                             "${} = {} = {}$\\\\\n",
                             lhs.trim(),
-                            rhs.to_latex().to_string().trim_end(),
+                            rhs.to_latex_ext(&self.format_args).to_string().trim_end(),
                             val.to_latex_ext(&format_args).to_string().trim_end(),
                         )
                         .as_str(),
