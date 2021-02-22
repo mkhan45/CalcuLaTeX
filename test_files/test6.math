@@ -1,6 +1,10 @@
-1 day = ? s
+!digits 7
 1 day = ?
-1 kday = ?
 1 km = ?
-12 hour = ?
 50 g * 50 kg = ?
+1 m * 1 m = ?
+1000 m * 1000 m = ?
+10 m * 10 m = ?
+1 km * 1 km = ?
+1 m * 1 km = ?
+1 m * 1 km * 30 mm = ?

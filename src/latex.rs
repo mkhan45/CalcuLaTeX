@@ -7,10 +7,10 @@ use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
 use crate::expr::unit::{BaseUnit, UnitDesc};
 use crate::expr::{unit::Unit, val::Val, Expr, Op};
-use num::rational::Ratio;
 use num::One;
 use num::Signed;
 use num::Zero;
+use num::{rational::Ratio, ToPrimitive};
 
 pub enum LaTeX {
     Text(String),
@@ -146,18 +146,26 @@ impl ToLaTeX for Val {
                 )
             }
             None => {
-                dbg!(
-                    self.num,
-                    self.unit.clone(),
-                    self.unit.to_latex().to_string()
-                );
-                let unit_str = self.unit.to_latex().to_string();
+                // TODO don't round this
+                let largest_power = self.unit.desc.largest_power().round().to_i64().unwrap();
+
+                let display_exp = self.unit.exp.clamp(-3, 3);
+
+                let unit_str = Unit {
+                    exp: display_exp,
+                    ..self.unit.clone()
+                }
+                .to_latex()
+                .to_string();
+
                 let out = if !unit_str.is_empty() {
                     // the exponent is encoded into the unit
                     format!(
                         "{:.*} \\ {}",
                         args.max_digits,
-                        self.num * self.unit.mult,
+                        self.num
+                            * self.unit.mult
+                            * 10f64.powi((self.unit.exp - display_exp * largest_power) as i32),
                         unit_str
                     )
                 } else {

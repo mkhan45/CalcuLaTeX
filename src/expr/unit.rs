@@ -118,6 +118,13 @@ impl UnitDesc {
             UnitDesc::Custom(_) => todo!(),
         }
     }
+
+    pub fn largest_power(&self) -> Ratio<i8> {
+        match self {
+            UnitDesc::Base(a) => *a.iter().max().unwrap_or(&Ratio::zero()),
+            UnitDesc::Custom(_) => todo!(),
+        }
+    }
 }
 
 #[derive(Clone, PartialEq)]
@@ -212,19 +219,23 @@ impl std::convert::TryFrom<&str> for Unit {
                     mult: 1.0,
                 },
                 "minute" | "min" => Unit {
-                    mult: 60.0,
+                    mult: 6.0,
+                    exp: 1,
                     ..BaseUnit::Second.into()
                 },
                 "hour" | "hours" => Unit {
-                    mult: 60.0 * 60.0,
+                    mult: 3.6,
+                    exp: 3,
                     ..BaseUnit::Second.into()
                 },
                 "day" | "days" => Unit {
-                    mult: 60.0 * 60.0 * 24.0,
+                    mult: 8.64,
+                    exp: 4,
                     ..BaseUnit::Second.into()
                 },
                 "year" | "years" => Unit {
-                    mult: 60.0 * 60.0 * 24.0 * 365.0,
+                    mult: 3.1536,
+                    exp: 7,
                     ..BaseUnit::Second.into()
                 },
                 "amu" => Unit {

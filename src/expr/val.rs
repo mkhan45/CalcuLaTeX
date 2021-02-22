@@ -111,9 +111,17 @@ impl std::ops::Mul<Val> for Val {
     type Output = Val;
 
     fn mul(self, rhs: Val) -> Self::Output {
+        let mut new_num = self.num * rhs.num;
+        let mut new_unit = self.unit * rhs.unit;
+
+        if new_num.abs() >= 10f64 {
+            new_unit.exp += new_num.log10() as i64;
+            new_num = new_num.signum() * new_num / 10f64.powi(new_num.log10() as i32);
+        }
+
         Val {
-            num: self.num * rhs.num,
-            unit: self.unit * rhs.unit,
+            num: new_num,
+            unit: new_unit,
         }
     }
 }
@@ -122,9 +130,17 @@ impl std::ops::Div<Val> for Val {
     type Output = Val;
 
     fn div(self, rhs: Val) -> Self::Output {
+        let mut new_num = self.num / rhs.num;
+        let mut new_unit = self.unit / rhs.unit;
+
+        if new_num.abs() >= 10f64 {
+            new_unit.exp += new_num.log10() as i64;
+            new_num = new_num.signum() * new_num / 10f64.powi(new_num.log10() as i32);
+        }
+
         Val {
-            num: self.num / rhs.num,
-            unit: self.unit / rhs.unit,
+            num: new_num,
+            unit: new_unit,
         }
     }
 }
