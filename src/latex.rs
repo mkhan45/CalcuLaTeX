@@ -126,6 +126,7 @@ impl ToLaTeX for Val {
                 unit,
                 pretty_string,
             }) if unit.desc == self.unit.desc => {
+                dbg!(self.num, unit.clone());
                 let out = format!(
                     "{:.*} \\ {}",
                     args.max_digits,
@@ -137,6 +138,7 @@ impl ToLaTeX for Val {
                 LaTeX::Math(out.trim().to_string())
             }
             Some(UnitHint { unit, .. }) => {
+                dbg!(self.num, self.unit.clone());
                 panic!(
                     "Unit hint {} does not match value with unit {}",
                     unit.to_string(),
@@ -144,6 +146,11 @@ impl ToLaTeX for Val {
                 )
             }
             None => {
+                dbg!(
+                    self.num,
+                    self.unit.clone(),
+                    self.unit.to_latex().to_string()
+                );
                 let unit_str = self.unit.to_latex().to_string();
                 let out = if !unit_str.is_empty() {
                     // the exponent is encoded into the unit

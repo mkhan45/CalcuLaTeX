@@ -167,7 +167,17 @@ impl std::convert::TryFrom<&str> for Unit {
             // have to be hardcoded out.
             let (stripped, exp) = if !matches!(
                 s,
-                "day" | "days" | "hours" | "hour" | "meters" | "meter" | "m" | "minutes" | "min"
+                "day"
+                    | "days"
+                    | "hours"
+                    | "hour"
+                    | "meters"
+                    | "meter"
+                    | "m"
+                    | "minutes"
+                    | "min"
+                    | "mol"
+                    | "moles"
             ) {
                 UNIT_PREFIXES
                     .iter()
