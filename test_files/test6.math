@@ -1,4 +1,6 @@
-!digits 7
+!digits 2
+!scientific 
+
 1 day = ?
 1 km = ?
 50 g * 50 kg = ?
@@ -8,3 +10,5 @@
 1 km * 1 km = ?
 1 m * 1 km = ?
 1 m * 1 km * 30 mm = ?
+1 + 9 = ?
+1 * 10^5 = ?

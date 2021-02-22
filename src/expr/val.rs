@@ -65,6 +65,7 @@ impl std::ops::Add<Val> for Val {
                     ..self.unit
                 },
             }
+            .clamp_num()
         } else {
             panic!("Can't add")
         }
@@ -101,6 +102,7 @@ impl std::ops::Sub<Val> for Val {
                     ..self.unit
                 },
             }
+            .clamp_num()
         } else {
             panic!("Can't sub")
         }
@@ -123,6 +125,7 @@ impl std::ops::Mul<Val> for Val {
             num: new_num,
             unit: new_unit,
         }
+        .clamp_num()
     }
 }
 
@@ -142,6 +145,7 @@ impl std::ops::Div<Val> for Val {
             num: new_num,
             unit: new_unit,
         }
+        .clamp_num()
     }
 }
 
@@ -172,6 +176,28 @@ impl Val {
         } else {
             panic!()
         }
+    }
+
+    pub fn clamp_num(&self) -> Val {
+        let num_log10 = self.num.log10() as i64;
+        let mult_log10 = self.unit.mult.log10() as i64;
+
+        let mut res = Val {
+            num: self.num / 10f64.powi(num_log10 as i32),
+            unit: Unit {
+                mult: self.unit.mult / 10f64.powi(mult_log10 as i32),
+                exp: self.unit.exp + num_log10 + mult_log10,
+                desc: self.unit.desc.clone(),
+            },
+        };
+
+        if res.num.abs() < 1.0 {
+            let n = (res.num.signum() * 1.0f64 / res.num).floor();
+            res.unit.exp -= 1 + n.log10() as i64;
+            res.num *= 10f64.powi(n.log10() as i32 + 1);
+        }
+
+        res
     }
 }
 

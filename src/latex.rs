@@ -26,6 +26,7 @@ pub struct UnitHint {
 pub struct FormatArgs {
     pub unit_hint: Option<UnitHint>,
     pub max_digits: usize,
+    pub scientific_notation: bool,
 }
 
 impl Default for FormatArgs {
@@ -33,6 +34,7 @@ impl Default for FormatArgs {
         FormatArgs {
             unit_hint: None,
             max_digits: 3,
+            scientific_notation: false,
         }
     }
 }
@@ -126,19 +128,27 @@ impl ToLaTeX for Val {
                 unit,
                 pretty_string,
             }) if unit.desc == self.unit.desc => {
-                dbg!(self.num, unit.clone());
-                let out = format!(
-                    "{:.*} \\ {}",
-                    args.max_digits,
-                    (self.num
-                        / 10f64.powi((unit.exp - self.unit.exp) as i32)
-                        / (unit.mult / self.unit.mult)),
-                    pretty_string.to_latex().to_string()
-                );
+                let out = if args.scientific_notation && self.unit.exp != unit.exp {
+                    format!(
+                        "{:.*} \\times 10^{{{}}} \\ {} ",
+                        args.max_digits,
+                        self.num,
+                        self.unit.exp - unit.exp,
+                        pretty_string.to_latex().to_string()
+                    )
+                } else {
+                    format!(
+                        "{:.*} \\ {}",
+                        args.max_digits,
+                        (self.num
+                            / 10f64.powi((unit.exp - self.unit.exp) as i32)
+                            / (unit.mult / self.unit.mult)),
+                        pretty_string.to_latex().to_string()
+                    )
+                };
                 LaTeX::Math(out.trim().to_string())
             }
             Some(UnitHint { unit, .. }) => {
-                dbg!(self.num, self.unit.clone());
                 panic!(
                     "Unit hint {} does not match value with unit {}",
                     unit.to_string(),
@@ -146,31 +156,57 @@ impl ToLaTeX for Val {
                 )
             }
             None => {
-                // TODO don't round this
-                let largest_power = self.unit.desc.largest_power().round().to_i64().unwrap();
+                let out = {
+                    dbg!(self.num);
+                    // TODO don't round this
+                    let largest_power = self.unit.desc.largest_power().round().to_i64().unwrap();
 
-                let display_exp = self.unit.exp.clamp(-3, 3);
+                    let display_exp = (self.unit.exp / largest_power.max(1)).clamp(-3, 3);
 
-                let unit_str = Unit {
-                    exp: display_exp,
-                    ..self.unit.clone()
-                }
-                .to_latex()
-                .to_string();
+                    let unit_str = Unit {
+                        exp: display_exp,
+                        ..self.unit.clone()
+                    }
+                    .to_latex()
+                    .to_string();
 
-                let out = if !unit_str.is_empty() {
-                    // the exponent is encoded into the unit
-                    format!(
-                        "{:.*} \\ {}",
-                        args.max_digits,
-                        self.num
-                            * self.unit.mult
-                            * 10f64.powi((self.unit.exp - display_exp * largest_power) as i32),
-                        unit_str
-                    )
-                } else {
-                    (self.num * 10f64.powi(self.unit.exp as i32)).to_string()
+                    if !unit_str.is_empty() {
+                        // the exponent is encoded into the unit
+                        if args.scientific_notation && self.unit.exp != 0 {
+                            format!(
+                                "{:.*}\\times 10^{{{}}} \\ {}",
+                                args.max_digits,
+                                self.num * self.unit.mult,
+                                self.unit.exp,
+                                unit_str
+                            )
+                        } else {
+                            format!(
+                                "{:.*} \\ {}",
+                                args.max_digits,
+                                self.num
+                                    * self.unit.mult
+                                    * 10f64
+                                        .powi((self.unit.exp - display_exp * largest_power) as i32),
+                                unit_str
+                            )
+                        }
+                    } else {
+                        if args.scientific_notation && self.unit.exp != 0 {
+                            format!(
+                                "{:.*}\\times 10^{{{}}}",
+                                args.max_digits, self.num, self.unit.exp
+                            )
+                        } else {
+                            format!(
+                                "{:.*}",
+                                args.max_digits,
+                                self.num * 10f64.powi(self.unit.exp as i32)
+                            )
+                        }
+                    }
                 };
+
                 LaTeX::Math(out.trim().to_string())
             }
         }

@@ -27,6 +27,7 @@ pub enum Statement {
         unit_hint: Option<UnitHint>,
     },
     DigitSet(usize),
+    SetScientific,
     LineGap,
     RawLaTeX(String),
 }
@@ -61,6 +62,7 @@ impl State {
             match stmt {
                 Statement::LineGap => self.output.push_str("\\\\"),
                 Statement::DigitSet(n) => self.format_args.max_digits = *n,
+                Statement::SetScientific => self.format_args.scientific_notation = true,
                 Statement::RawLaTeX(s) => self.output.push_str(s),
                 Statement::ExprStmt(expr) => {
                     // expr statements don't really have a use since
@@ -140,7 +142,7 @@ impl State {
                         )
                         .as_str(),
                     );
-                    self.scope.variables.insert(lhs.clone(), val);
+                    self.scope.variables.insert(lhs.clone(), val.clamp_num());
                 }
             }
         }

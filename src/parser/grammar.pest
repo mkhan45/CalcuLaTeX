@@ -26,8 +26,9 @@ statement = { latex_block | line_gap_stmt | (format_directive | dec_print_expr |
     var_dec = { ident ~ "=" ~ expression }
     print_expr = { expression ~ "=" ~ "?" ~ unit_expr? }
     dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" ~ unit_expr? }
-    format_directive = _{ "!" ~ digit_set }
+    format_directive = _{ "!" ~ (digit_set | set_scientific) }
         digit_set = { "digits" ~ " "* ~ integer }
+        set_scientific = { "scientific" }
 
 program = _{ NEWLINE* ~ statement ~ sub_program* }
     sub_program = _{ statement ~ sub_program* }

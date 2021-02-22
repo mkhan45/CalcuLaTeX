@@ -77,6 +77,7 @@ pub fn parse_block(s: &str) -> Vec<Statement> {
         match stmt.as_rule() {
             Rule::expression => Statement::ExprStmt(parse_expr(stmt)),
             Rule::digit_set => parse_digit_set(stmt),
+            Rule::set_scientific => Statement::SetScientific,
             Rule::var_dec => parse_var_dec(stmt),
             Rule::print_expr => parse_print_stmt(stmt),
             Rule::dec_print_expr => parse_dec_print_stmt(stmt),

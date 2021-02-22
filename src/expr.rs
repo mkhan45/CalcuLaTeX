@@ -33,7 +33,7 @@ impl Expr {
     pub fn eval(&self, scope: &Scope) -> Val {
         let e = |a: &Expr| a.eval(scope);
         match self {
-            Expr::Atom(v) => v.clone(),
+            Expr::Atom(v) => v.clamp_num(),
             Expr::Ident(n) => {
                 if let Some(v) = scope.variables.get(n) {
                     v.clone()
