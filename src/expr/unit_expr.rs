@@ -10,7 +10,7 @@ pub enum UnitExpr {
 pub enum UnitOp {
     Mul,
     Div,
-    Exp(i8),
+    Exp(i64),
 }
 
 impl UnitExpr {
@@ -20,7 +20,7 @@ impl UnitExpr {
             UnitExpr::Cons(op, xs) => match (op, xs.as_slice()) {
                 (UnitOp::Mul, [a, b]) => a.eval() * b.eval(),
                 (UnitOp::Div, [a, b]) => a.eval() / b.eval(),
-                (UnitOp::Exp(p), [a]) => a.eval().pow(*p),
+                (UnitOp::Exp(p), [a]) => a.eval().pow(*p as i64),
                 _ => panic!(),
             },
         }

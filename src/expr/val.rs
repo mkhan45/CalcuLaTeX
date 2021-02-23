@@ -165,12 +165,11 @@ impl Val {
     }
 
     pub fn pow(&self, rhs: &Val) -> Val {
-        let p = rhs.num;
-        if rhs.unit.desc.is_empty() || p.fract() == 0.0 {
-            let pow = p as i8;
-            let unit = self.unit.pow(pow);
+        if rhs.unit.desc.is_empty() || rhs.num.fract() == 0.0 {
+            let p = rhs.num * 10f64.powi(rhs.unit.exp as i32);
+            let unit = self.unit.pow(p as i64);
             Val {
-                num: self.num.pow(p as f64),
+                num: self.num.pow(p),
                 unit,
             }
         } else {

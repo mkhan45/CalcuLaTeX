@@ -157,9 +157,15 @@ impl Unit {
         Self::default()
     }
 
-    pub fn pow(&self, rhs: i8) -> Self {
+    pub fn pow(&self, rhs: i64) -> Self {
         let mut ret = self.clone();
-        (0..rhs - 1).for_each(|_| ret = ret.clone() * self.clone());
+        if rhs > 0 {
+            (0..rhs - 1).for_each(|_| ret = ret.clone() * self.clone());
+        } else if rhs == 0 {
+            todo!();
+        } else {
+            (0..rhs.abs() + 1).for_each(|_| ret = ret.clone() / self.clone());
+        }
         ret
     }
 }

@@ -124,6 +124,7 @@ impl ToLaTeX for UnitExpr {
 
 impl ToLaTeX for Val {
     fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
+        // dbg!(self.num, self.unit.exp);
         Ok(match &args.unit_hint {
             Some(UnitHint {
                 unit,
