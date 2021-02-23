@@ -1,3 +1,4 @@
+use crate::CalcError;
 use std::convert::TryInto;
 
 use pest::iterators::{Pair, Pairs};
@@ -8,20 +9,20 @@ use crate::{
     parser::Rule,
 };
 
-pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
+pub fn parse_unit_expr(r: Pair<Rule>) -> Result<UnitExpr, CalcError> {
     assert_eq!(r.as_rule(), Rule::unit_expr);
 
-    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> UnitExpr {
+    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> Result<UnitExpr, CalcError> {
         if let Some(nx) = inp.next() {
             let mut lhs = {
                 match nx.as_rule() {
                     Rule::unit => {
                         let rule_str = nx.as_str();
-                        let unit: Unit = rule_str.try_into().unwrap();
+                        let unit: Unit = rule_str.try_into()?;
                         UnitExpr::Atom(unit)
                     }
                     Rule::unit_expr => {
-                        let unit = parse_unit_expr(nx).eval();
+                        let unit = parse_unit_expr(nx)?.eval();
                         UnitExpr::Atom(unit)
                     }
                     _ => unreachable!(),
@@ -59,13 +60,13 @@ pub fn parse_unit_expr(r: Pair<Rule>) -> UnitExpr {
                 }
                 inp.next();
 
-                let rhs = expr_bp(inp, r_bp);
+                let rhs = expr_bp(inp, r_bp)?;
                 lhs = UnitExpr::Cons(op, vec![lhs, rhs]);
 
                 continue;
             }
 
-            lhs
+            Ok(lhs)
         } else {
             unreachable!()
         }

@@ -13,7 +13,6 @@ pub struct Scope {
 
 #[derive(Debug)]
 pub enum Statement {
-    ExprStmt(Expr),
     VarDec {
         lhs: String,
         rhs: Expr,
@@ -66,12 +65,6 @@ impl State {
                 Statement::DigitSet(n) => self.format_args.max_digits = *n,
                 Statement::SetScientific => self.format_args.scientific_notation = true,
                 Statement::RawLaTeX(s) => self.output.push_str(s),
-                Statement::ExprStmt(expr) => {
-                    // expr statements don't really have a use since
-                    // there are no functions with side effects
-                    // realistically this shouldn't even be evaluated
-                    let _res = expr.eval(&self.scope);
-                }
                 Statement::VarDec { lhs, rhs } => {
                     // lhs is just the variable name.
                     // rhs is an expression. In this case, we don't

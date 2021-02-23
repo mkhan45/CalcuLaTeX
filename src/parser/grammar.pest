@@ -20,7 +20,8 @@ operation = @{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
-statement = { latex_block | line_gap_stmt | (format_directive | dec_print_expr | print_expr | var_dec | expression) ~ NEWLINE }
+statement = { latex_block | line_gap_stmt | ((format_directive | dec_print_expr | print_expr | var_dec | error) ~ NEWLINE) }
+    error = { (!NEWLINE ~ ANY)* }
     line_gap_stmt = { WHITESPACE* ~ NEWLINE }
     latex_block = { "'''" ~ (!"'''" ~ ANY)* ~ "'''" }
     var_dec = { ident ~ "=" ~ expression }

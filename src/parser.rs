@@ -36,7 +36,7 @@ fn parse_print_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
 
     let unit_hint = match inner.next() {
         Some(r) => Some(UnitHint {
-            unit: parse_unit_expr(r.clone()).eval(),
+            unit: parse_unit_expr(r.clone())?.eval(),
             pretty_string: parse_naive_string(r)?,
         }),
         None => None,
@@ -56,7 +56,7 @@ fn parse_dec_print_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
 
     let unit_hint = match inner.next() {
         Some(r) => Some(UnitHint {
-            unit: parse_unit_expr(r.clone()).eval(),
+            unit: parse_unit_expr(r.clone())?.eval(),
             pretty_string: parse_naive_string(r)?,
         }),
         None => None,
@@ -81,15 +81,15 @@ pub fn parse_block(s: &str) -> Result<Vec<(usize, Statement)>, CalcError> {
     inp.map(|s| {
         let stmt = s.into_inner().next().unwrap();
         let (line, _) = stmt.as_span().start_pos().line_col();
+        let add_line = |e: CalcError| e.add_line(line);
         Ok((
             line,
             match stmt.as_rule() {
-                Rule::expression => Statement::ExprStmt(parse_expr(stmt)?),
                 Rule::digit_set => parse_digit_set(stmt),
                 Rule::set_scientific => Statement::SetScientific,
-                Rule::var_dec => parse_var_dec(stmt)?,
-                Rule::print_expr => parse_print_stmt(stmt)?,
-                Rule::dec_print_expr => parse_dec_print_stmt(stmt)?,
+                Rule::var_dec => parse_var_dec(stmt).map_err(add_line)?,
+                Rule::print_expr => parse_print_stmt(stmt).map_err(add_line)?,
+                Rule::dec_print_expr => parse_dec_print_stmt(stmt).map_err(add_line)?,
                 Rule::line_gap_stmt => Statement::LineGap,
                 Rule::latex_block => Statement::RawLaTeX(
                     stmt.as_str()
@@ -97,6 +97,13 @@ pub fn parse_block(s: &str) -> Result<Vec<(usize, Statement)>, CalcError> {
                         .trim_end_matches("'''")
                         .to_owned(),
                 ),
+                Rule::error => {
+                    return Err(CalcError::Other(format!(
+                        "Invalid statement {}",
+                        stmt.as_str()
+                    )))
+                    .map_err(add_line)?
+                }
                 _ => unreachable!(),
             },
         ))
