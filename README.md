@@ -1,7 +1,6 @@
 # CalcuLaTeX
-pretty printing calculator language
 
-Kind of like smart LaTeX
+Try it out at <https://mkhan45.github.io/CalcuLaTeX-Web/>
 
 ## Example
 
