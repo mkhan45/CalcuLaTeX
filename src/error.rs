@@ -19,12 +19,12 @@ impl std::fmt::Display for CalcError {
                 let location = &e.line_col;
                 match location {
                     pest::error::LineColLocation::Pos((line, col)) => {
-                        write!(f, "Parsing Error near line {} column {}\n", line, col)
+                        writeln!(f, "Parsing Error near line {} column {}", line, col)
                     }
                     pest::error::LineColLocation::Span((l1, c1), (l2, c2)) => {
-                        write!(
+                        writeln!(
                             f,
-                            "Parsing Error near span from line {}, column {} to line {} column {}\n",
+                            "Parsing Error near span from line {}, column {} to line {} column {}",
                             l1, c1, l2, c2,
                         )
                     }

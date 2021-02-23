@@ -191,19 +191,17 @@ impl ToLaTeX for Val {
                                 unit_str
                             )
                         }
+                    } else if args.scientific_notation && self.unit.exp != 0 {
+                        format!(
+                            "{:.*}\\times 10^{{{}}}",
+                            args.max_digits, self.num, self.unit.exp
+                        )
                     } else {
-                        if args.scientific_notation && self.unit.exp != 0 {
-                            format!(
-                                "{:.*}\\times 10^{{{}}}",
-                                args.max_digits, self.num, self.unit.exp
-                            )
-                        } else {
-                            format!(
-                                "{:.*}",
-                                args.max_digits,
-                                self.num * 10f64.powi(self.unit.exp as i32)
-                            )
-                        }
+                        format!(
+                            "{:.*}",
+                            args.max_digits,
+                            self.num * 10f64.powi(self.unit.exp as i32)
+                        )
                     }
                 };
 
@@ -265,18 +263,16 @@ impl ToLaTeX for Unit {
                     } else {
                         LaTeX::Math(format!("{}\\times 10^{{{}}}", numerator_string, self.exp))
                     }
+                } else if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
+                    LaTeX::Math(format!(
+                        "\\frac{{{}{}}}{{{}}}",
+                        prefix, numerator_string, denominator_string
+                    ))
                 } else {
-                    if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
-                        LaTeX::Math(format!(
-                            "\\frac{{{}{}}}{{{}}}",
-                            prefix, numerator_string, denominator_string
-                        ))
-                    } else {
-                        LaTeX::Math(format!(
-                            "\\frac{{{}}}{{{}}}\\times 10^{{{}}}",
-                            numerator_string, denominator_string, self.exp
-                        ))
-                    }
+                    LaTeX::Math(format!(
+                        "\\frac{{{}}}{{{}}}\\times 10^{{{}}}",
+                        numerator_string, denominator_string, self.exp
+                    ))
                 }
             }
             UnitDesc::Custom(_map) => {
