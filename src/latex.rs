@@ -1,3 +1,4 @@
+use crate::CalcError;
 use crate::{
     expr::unit_expr::{UnitExpr, UnitOp},
     parser::naive_string::StringExpr,
@@ -40,8 +41,8 @@ impl Default for FormatArgs {
 }
 
 pub trait ToLaTeX {
-    fn to_latex_ext(&self, args: &FormatArgs) -> LaTeX;
-    fn to_latex(&self) -> LaTeX {
+    fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError>;
+    fn to_latex(&self) -> Result<LaTeX, CalcError> {
         self.to_latex_ext(&FormatArgs::default())
     }
 }
@@ -56,74 +57,74 @@ impl ToString for LaTeX {
 }
 
 impl ToLaTeX for Expr {
-    fn to_latex_ext(&self, args: &FormatArgs) -> LaTeX {
-        match self {
-            Expr::Atom(v) => LaTeX::Math(v.to_latex_ext(args).to_string()),
+    fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
+        Ok(match self {
+            Expr::Atom(v) => LaTeX::Math(v.to_latex_ext(args)?.to_string()),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
             Expr::Cons(op, e) => match (op, e.as_slice()) {
                 (Op::Plus, [a, b, ..]) => LaTeX::Math(format!(
                     "({} + {})",
-                    a.to_latex_ext(args).to_string(),
-                    b.to_latex_ext(args).to_string()
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
                 )),
                 (Op::Minus, [a, b, ..]) => LaTeX::Math(format!(
                     "({} - {})",
-                    a.to_latex_ext(args).to_string(),
-                    b.to_latex_ext(args).to_string()
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
                 )),
                 (Op::Mul, [a, b, ..]) => LaTeX::Math(format!(
                     "{} \\times {}",
-                    a.to_latex_ext(args).to_string(),
-                    b.to_latex_ext(args).to_string()
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
                 )),
                 (Op::Div, [a, b, ..]) => LaTeX::Math(format!(
                     "\\frac{{{}}}{{{}}}",
-                    a.to_latex_ext(args).to_string(),
-                    b.to_latex_ext(args).to_string()
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
                 )),
                 (Op::Exp, [a, b, ..]) => LaTeX::Math(format!(
                     "{}^{{{}}}",
-                    a.to_latex_ext(args).to_string(),
-                    b.to_latex_ext(args).to_string()
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
                 )),
                 (Op::AddUnit(_, s), [v]) => {
-                    LaTeX::Math(format!("{}\\ {}", v.to_latex_ext(args).to_string(), s))
+                    LaTeX::Math(format!("{}\\ {}", v.to_latex_ext(args)?.to_string(), s))
                 }
                 _ => todo!(),
             },
-        }
+        })
     }
 }
 
 impl ToLaTeX for UnitExpr {
-    fn to_latex_ext(&self, _: &FormatArgs) -> LaTeX {
-        match self {
-            UnitExpr::Atom(u) => LaTeX::Math(u.to_latex().to_string()),
+    fn to_latex_ext(&self, _: &FormatArgs) -> Result<LaTeX, CalcError> {
+        Ok(match self {
+            UnitExpr::Atom(u) => LaTeX::Math(u.to_latex()?.to_string()),
             UnitExpr::Cons(op, e) => match (op, e.as_slice()) {
                 (UnitOp::Mul, [a, b, ..]) => LaTeX::Math(format!(
                     "{} \\ {}",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex()?.to_string(),
+                    b.to_latex()?.to_string()
                 )),
                 (UnitOp::Div, [a, b, ..]) => LaTeX::Math(format!(
                     "\\frac{{{}}}{{{}}}",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex()?.to_string(),
+                    b.to_latex()?.to_string()
                 )),
                 (UnitOp::Exp(e), [a, ..]) => LaTeX::Math(format!(
                     "{}^{{{}}}",
-                    a.to_latex().to_string(),
+                    a.to_latex()?.to_string(),
                     e.to_string()
                 )),
                 _ => todo!(),
             },
-        }
+        })
     }
 }
 
 impl ToLaTeX for Val {
-    fn to_latex_ext(&self, args: &FormatArgs) -> LaTeX {
-        match &args.unit_hint {
+    fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
+        Ok(match &args.unit_hint {
             Some(UnitHint {
                 unit,
                 pretty_string,
@@ -134,7 +135,7 @@ impl ToLaTeX for Val {
                         args.max_digits,
                         self.num,
                         self.unit.exp - unit.exp,
-                        pretty_string.to_latex().to_string()
+                        pretty_string.to_latex()?.to_string()
                     )
                 } else {
                     format!(
@@ -143,17 +144,17 @@ impl ToLaTeX for Val {
                         (self.num
                             / 10f64.powi((unit.exp - self.unit.exp) as i32)
                             / (unit.mult / self.unit.mult)),
-                        pretty_string.to_latex().to_string()
+                        pretty_string.to_latex()?.to_string()
                     )
                 };
                 LaTeX::Math(out.trim().to_string())
             }
             Some(UnitHint { unit, .. }) => {
-                panic!(
+                return Err(CalcError::UnitError(format!(
                     "Unit hint {} does not match value with unit {}",
                     unit.to_string(),
                     self.unit
-                )
+                )))
             }
             None => {
                 let out = {
@@ -166,7 +167,7 @@ impl ToLaTeX for Val {
                         exp: display_exp,
                         ..self.unit.clone()
                     }
-                    .to_latex()
+                    .to_latex()?
                     .to_string();
 
                     if !unit_str.is_empty() {
@@ -208,13 +209,13 @@ impl ToLaTeX for Val {
 
                 LaTeX::Math(out.trim().to_string())
             }
-        }
+        })
     }
 }
 
 impl ToLaTeX for Unit {
-    fn to_latex_ext(&self, _: &FormatArgs) -> LaTeX {
-        match self.desc.clone() {
+    fn to_latex_ext(&self, _: &FormatArgs) -> Result<LaTeX, CalcError> {
+        Ok(match self.desc.clone() {
             UnitDesc::Base(arr) => {
                 let mut numerator = Vec::new();
                 let mut denominator = Vec::new();
@@ -281,6 +282,6 @@ impl ToLaTeX for Unit {
             UnitDesc::Custom(_map) => {
                 todo!()
             }
-        }
+        })
     }
 }

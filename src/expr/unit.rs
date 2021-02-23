@@ -13,6 +13,8 @@ use bimap::BiMap;
 
 use lazy_static::lazy_static;
 
+use crate::error::CalcError;
+
 lazy_static! {
     pub static ref UNIT_PREFIXES: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
@@ -163,7 +165,7 @@ impl Unit {
 }
 
 impl std::convert::TryFrom<&str> for Unit {
-    type Error = &'static str;
+    type Error = CalcError;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         let s = s.trim();
@@ -249,8 +251,10 @@ impl std::convert::TryFrom<&str> for Unit {
                     mult: 1.0,
                 },
                 _ => {
-                    dbg!(s, stripped);
-                    return Err("Bad unit");
+                    return Err(CalcError::UnitError(format!(
+                        "{} is not a variable or a valid unit",
+                        s
+                    )));
                 }
             };
 
@@ -264,7 +268,7 @@ impl std::convert::TryFrom<&str> for Unit {
 }
 
 impl TryFrom<String> for Unit {
-    type Error = &'static str;
+    type Error = CalcError;
 
     fn try_from(s: String) -> Result<Self, Self::Error> {
         s.as_str().try_into()
@@ -272,7 +276,7 @@ impl TryFrom<String> for Unit {
 }
 
 impl TryFrom<&String> for Unit {
-    type Error = &'static str;
+    type Error = CalcError;
 
     fn try_from(s: &String) -> Result<Self, Self::Error> {
         s.as_str().try_into()

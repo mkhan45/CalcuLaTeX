@@ -20,18 +20,23 @@ fn main() {
         println!("rebuilding pdf");
         let contents = std::fs::read_to_string(filename).unwrap();
 
-        let output = calculatex::generate_latex(&contents);
+        match calculatex::generate_latex(&contents) {
+            Ok(output) => {
+                let mut md_file = tempfile::NamedTempFile::new().unwrap();
+                write!(md_file, "{}", output).unwrap();
 
-        let mut md_file = tempfile::NamedTempFile::new().unwrap();
-        write!(md_file, "{}", output).unwrap();
+                let mut pandoc = pandoc::new();
+                pandoc.set_input_format(pandoc::InputFormat::Latex, Vec::new());
+                pandoc.add_input(&md_file.path());
 
-        let mut pandoc = pandoc::new();
-        pandoc.set_input_format(pandoc::InputFormat::Latex, Vec::new());
-        pandoc.add_input(&md_file.path());
-
-        pandoc.set_output(pandoc::OutputKind::File(args[2].to_string().into()));
-        pandoc.execute().unwrap();
-        println!("done rebuilding pdf");
+                pandoc.set_output(pandoc::OutputKind::File(args[2].to_string().into()));
+                pandoc.execute().unwrap();
+                println!("done rebuilding pdf");
+            }
+            Err(e) => {
+                println!("{}", e);
+            }
+        }
     };
 
     rebuild();

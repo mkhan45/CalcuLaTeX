@@ -1,4 +1,5 @@
 use crate::parser::naive_string::parse_naive_string;
+use crate::CalcError;
 use pest::iterators::{Pair, Pairs};
 
 use crate::{
@@ -9,15 +10,15 @@ use crate::{
 
 use crate::latex::ToLaTeX;
 
-pub fn parse_expr(r: Pair<Rule>) -> Expr {
+pub fn parse_expr(r: Pair<Rule>) -> Result<Expr, CalcError> {
     assert_eq!(r.as_rule(), Rule::expression);
 
-    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> Expr {
+    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> Result<Expr, CalcError> {
         if let Some(nx) = inp.next() {
             let mut lhs = match nx.as_rule() {
                 Rule::number => Expr::Atom(Val::empty(nx.as_str().trim().parse::<f64>().unwrap())),
                 Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
-                Rule::expression => parse_expr(nx),
+                Rule::expression => parse_expr(nx)?,
                 _ => {
                     dbg!(nx);
                     unreachable!();
@@ -35,7 +36,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
                     Rule::unit_expr => {
-                        let naive_expr = parse_naive_string(nx.clone()).to_latex();
+                        let naive_expr = parse_naive_string(nx.clone())?.to_latex()?;
                         let unit_expr = parse_unit_expr(nx);
                         Op::AddUnit(unit_expr.eval(), naive_expr.to_string())
                     }
@@ -59,11 +60,11 @@ pub fn parse_expr(r: Pair<Rule>) -> Expr {
                 }
                 inp.next();
 
-                let rhs = expr_bp(inp, r_bp);
+                let rhs = expr_bp(inp, r_bp)?;
                 lhs = Expr::Cons(op, vec![lhs, rhs]);
             }
 
-            lhs
+            Ok(lhs)
         } else {
             unreachable!()
         }

@@ -15,7 +15,7 @@ dt_{force} = 0.1 s
 
 
 ''' Solution: '''
-y_{vel} = F_0 / m_{rock} * dt_{force} = ?
+y_{vel} = F_0 / m_{rock} * dt_{force} = ? m/s
 
 airtime = y_{vel} / g * 2 = ?
 height_{max} = y_{vel} * airtime / 4 = ?

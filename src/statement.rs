@@ -1,5 +1,6 @@
 use crate::latex::FormatArgs;
 use crate::latex::UnitHint;
+use crate::CalcError;
 use std::collections::BTreeMap;
 
 use crate::{expr::val::Val, parser};
@@ -39,26 +40,27 @@ pub struct State {
     // and I don't think more is necessary
     pub scope: Scope,
     // The statements to be executed
-    pub statements: Vec<Statement>,
+    pub statements: Vec<(usize, Statement)>,
     // The LaTeX output buffer
     pub output: String,
     pub format_args: FormatArgs,
 }
 
 impl State {
-    pub fn new(contents: &str) -> Self {
+    pub fn new(contents: &str) -> Result<Self, CalcError> {
         let output = "\\documentclass{article}\n\\begin{document}\n".to_string();
 
-        State {
+        Ok(State {
             scope: Scope::default(),
-            statements: parser::parse_block(&contents),
+            statements: parser::parse_block(&contents)?,
             output,
             format_args: FormatArgs::default(),
-        }
+        })
     }
 
-    pub fn exec(&mut self) {
-        for stmt in self.statements.iter() {
+    pub fn exec(&mut self) -> Result<(), CalcError> {
+        for (line, stmt) in self.statements.iter() {
+            let add_line = |e: CalcError| e.add_line(*line);
             match stmt {
                 Statement::LineGap => self.output.push_str("\\\\"),
                 Statement::DigitSet(n) => self.format_args.max_digits = *n,
@@ -86,13 +88,16 @@ impl State {
                         format!(
                             "${} = {}$\\\\\n",
                             lhs.trim(),
-                            rhs.to_latex_ext(&self.format_args).to_string().trim_end(),
+                            rhs.to_latex_ext(&self.format_args)
+                                .map_err(add_line)?
+                                .to_string()
+                                .trim_end(),
                         )
                         .as_str(),
                     );
                     self.scope
                         .variables
-                        .insert(lhs.clone(), rhs.eval(&self.scope));
+                        .insert(lhs.clone(), rhs.eval(&self.scope).map_err(add_line)?);
                 }
                 Statement::PrintExpr { expr, unit_hint } => {
                     // Example: `5 * 10 kg = ? g` gets parsed roughly as
@@ -111,9 +116,14 @@ impl State {
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
-                            expr.to_latex_ext(&self.format_args).to_string().trim(),
+                            expr.to_latex_ext(&self.format_args)
+                                .map_err(add_line)?
+                                .to_string()
+                                .trim(),
                             expr.eval(&self.scope)
+                                .map_err(add_line)?
                                 .to_latex_ext(&format_args)
+                                .map_err(add_line)?
                                 .to_string()
                                 .trim_end(),
                         )
@@ -127,7 +137,7 @@ impl State {
                 } => {
                     // `DecPrintExpr` could probably be merged with `VarDec`,
                     // basically it's a combination of `PrintExpr` and `VarDec`
-                    let val = rhs.eval(&self.scope);
+                    let val = rhs.eval(&self.scope).map_err(add_line)?;
                     let format_args = FormatArgs {
                         unit_hint: unit_hint.clone(),
                         ..self.format_args
@@ -137,8 +147,14 @@ impl State {
                         format!(
                             "${} = {} = {}$\\\\\n",
                             lhs.trim(),
-                            rhs.to_latex_ext(&self.format_args).to_string().trim_end(),
-                            val.to_latex_ext(&format_args).to_string().trim_end(),
+                            rhs.to_latex_ext(&self.format_args)
+                                .map_err(add_line)?
+                                .to_string()
+                                .trim_end(),
+                            val.to_latex_ext(&format_args)
+                                .map_err(add_line)?
+                                .to_string()
+                                .trim_end(),
                         )
                         .as_str(),
                     );
@@ -146,6 +162,7 @@ impl State {
                 }
             }
         }
-        self.output.push_str("\\end{document}")
+        self.output.push_str("\\end{document}");
+        Ok(())
     }
 }

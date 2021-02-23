@@ -1,5 +1,8 @@
-use crate::parser::unit::{unit_infix_binding_power, unit_postfix_binding_power};
 use crate::parser::Rule;
+use crate::{
+    error::CalcError,
+    parser::unit::{unit_infix_binding_power, unit_postfix_binding_power},
+};
 
 use pest::iterators::{Pair, Pairs};
 
@@ -11,10 +14,10 @@ pub enum StringExpr {
     Cons(UnitOp, Vec<StringExpr>),
 }
 
-pub fn parse_naive_string(r: Pair<Rule>) -> StringExpr {
+pub fn parse_naive_string(r: Pair<Rule>) -> Result<StringExpr, CalcError> {
     assert_eq!(r.as_rule(), Rule::unit_expr);
 
-    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> StringExpr {
+    fn expr_bp(inp: &mut Pairs<Rule>, bp: u8) -> Result<StringExpr, CalcError> {
         if let Some(nx) = inp.next() {
             let mut lhs = {
                 match nx.as_rule() {
@@ -23,7 +26,7 @@ pub fn parse_naive_string(r: Pair<Rule>) -> StringExpr {
                         StringExpr::Atom(rule_str.to_string())
                     }
                     Rule::unit_expr => {
-                        let s = parse_naive_string(nx).to_latex().to_string();
+                        let s = parse_naive_string(nx)?.to_latex()?.to_string();
                         StringExpr::Atom(s)
                     }
                     _ => unreachable!(),
@@ -61,13 +64,13 @@ pub fn parse_naive_string(r: Pair<Rule>) -> StringExpr {
                 }
                 inp.next();
 
-                let rhs = expr_bp(inp, r_bp);
+                let rhs = expr_bp(inp, r_bp)?;
                 lhs = StringExpr::Cons(op, vec![lhs, rhs]);
 
                 continue;
             }
 
-            lhs
+            Ok(lhs)
         } else {
             unreachable!()
         }
@@ -77,31 +80,31 @@ pub fn parse_naive_string(r: Pair<Rule>) -> StringExpr {
 }
 
 impl ToLaTeX for StringExpr {
-    fn to_latex(&self) -> LaTeX {
+    fn to_latex(&self) -> Result<LaTeX, CalcError> {
         self.to_latex_ext(&FormatArgs::default())
     }
 
-    fn to_latex_ext(&self, _: &FormatArgs) -> LaTeX {
-        match self {
+    fn to_latex_ext(&self, _: &FormatArgs) -> Result<LaTeX, CalcError> {
+        Ok(match self {
             StringExpr::Atom(s) => LaTeX::Math(s.to_owned()),
             StringExpr::Cons(op, e) => match (op, e.as_slice()) {
                 (UnitOp::Mul, [a, b, ..]) => LaTeX::Math(format!(
                     "{} \\ {}",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex()?.to_string(),
+                    b.to_latex()?.to_string()
                 )),
                 (UnitOp::Div, [a, b, ..]) => LaTeX::Math(format!(
                     "\\frac{{{}}}{{{}}}",
-                    a.to_latex().to_string(),
-                    b.to_latex().to_string()
+                    a.to_latex()?.to_string(),
+                    b.to_latex()?.to_string()
                 )),
                 (UnitOp::Exp(e), [a, ..]) => LaTeX::Math(format!(
                     "{}^{{{}}}",
-                    a.to_latex().to_string(),
+                    a.to_latex()?.to_string(),
                     e.to_string()
                 )),
                 _ => todo!(),
             },
-        }
+        })
     }
 }

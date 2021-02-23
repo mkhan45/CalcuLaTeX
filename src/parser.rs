@@ -1,5 +1,5 @@
-use crate::latex::UnitHint;
 use crate::parser::naive_string::parse_naive_string;
+use crate::{error::CalcError, latex::UnitHint};
 use pest::iterators::Pair;
 use pest::Parser;
 use pest_derive::*;
@@ -18,49 +18,55 @@ pub mod naive_string;
 #[grammar = "parser/grammar.pest"]
 pub struct MathParser;
 
-fn parse_var_dec(r: Pair<Rule>) -> Statement {
+fn parse_var_dec(r: Pair<Rule>) -> Result<Statement, CalcError> {
     assert_eq!(r.as_rule(), Rule::var_dec);
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
     let rhs = inner.next().unwrap();
-    Statement::VarDec {
+    Ok(Statement::VarDec {
         lhs: lhs.as_str().to_string(),
-        rhs: parse_expr(rhs),
-    }
+        rhs: parse_expr(rhs)?,
+    })
 }
 
-fn parse_print_stmt(r: Pair<Rule>) -> Statement {
+fn parse_print_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
     assert_eq!(r.as_rule(), Rule::print_expr);
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
 
-    let unit_hint = inner.next().map(|r| UnitHint {
-        unit: parse_unit_expr(r.clone()).eval(),
-        pretty_string: parse_naive_string(r),
-    });
+    let unit_hint = match inner.next() {
+        Some(r) => Some(UnitHint {
+            unit: parse_unit_expr(r.clone()).eval(),
+            pretty_string: parse_naive_string(r)?,
+        }),
+        None => None,
+    };
 
-    Statement::PrintExpr {
-        expr: parse_expr(lhs),
+    Ok(Statement::PrintExpr {
+        expr: parse_expr(lhs)?,
         unit_hint,
-    }
+    })
 }
 
-fn parse_dec_print_stmt(r: Pair<Rule>) -> Statement {
+fn parse_dec_print_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
     assert_eq!(r.as_rule(), Rule::dec_print_expr);
     let mut inner = r.into_inner();
     let lhs = inner.next().unwrap();
     let rhs = inner.next().unwrap();
 
-    let unit_hint = inner.next().map(|r| UnitHint {
-        unit: parse_unit_expr(r.clone()).eval(),
-        pretty_string: parse_naive_string(r),
-    });
+    let unit_hint = match inner.next() {
+        Some(r) => Some(UnitHint {
+            unit: parse_unit_expr(r.clone()).eval(),
+            pretty_string: parse_naive_string(r)?,
+        }),
+        None => None,
+    };
 
-    Statement::DecPrintExpr {
+    Ok(Statement::DecPrintExpr {
         lhs: lhs.as_str().to_string(),
-        rhs: parse_expr(rhs),
+        rhs: parse_expr(rhs)?,
         unit_hint,
-    }
+    })
 }
 
 fn parse_digit_set(r: Pair<Rule>) -> Statement {
@@ -70,26 +76,30 @@ fn parse_digit_set(r: Pair<Rule>) -> Statement {
     Statement::DigitSet(n_digits)
 }
 
-pub fn parse_block(s: &str) -> Vec<Statement> {
-    let inp = MathParser::parse(Rule::program, s).unwrap();
+pub fn parse_block(s: &str) -> Result<Vec<(usize, Statement)>, CalcError> {
+    let inp = MathParser::parse(Rule::program, s)?;
     inp.map(|s| {
         let stmt = s.into_inner().next().unwrap();
-        match stmt.as_rule() {
-            Rule::expression => Statement::ExprStmt(parse_expr(stmt)),
-            Rule::digit_set => parse_digit_set(stmt),
-            Rule::set_scientific => Statement::SetScientific,
-            Rule::var_dec => parse_var_dec(stmt),
-            Rule::print_expr => parse_print_stmt(stmt),
-            Rule::dec_print_expr => parse_dec_print_stmt(stmt),
-            Rule::line_gap_stmt => Statement::LineGap,
-            Rule::latex_block => Statement::RawLaTeX(
-                stmt.as_str()
-                    .trim_start_matches("'''")
-                    .trim_end_matches("'''")
-                    .to_owned(),
-            ),
-            _ => unreachable!(),
-        }
+        let (line, _) = stmt.as_span().start_pos().line_col();
+        Ok((
+            line,
+            match stmt.as_rule() {
+                Rule::expression => Statement::ExprStmt(parse_expr(stmt)?),
+                Rule::digit_set => parse_digit_set(stmt),
+                Rule::set_scientific => Statement::SetScientific,
+                Rule::var_dec => parse_var_dec(stmt)?,
+                Rule::print_expr => parse_print_stmt(stmt)?,
+                Rule::dec_print_expr => parse_dec_print_stmt(stmt)?,
+                Rule::line_gap_stmt => Statement::LineGap,
+                Rule::latex_block => Statement::RawLaTeX(
+                    stmt.as_str()
+                        .trim_start_matches("'''")
+                        .trim_end_matches("'''")
+                        .to_owned(),
+                ),
+                _ => unreachable!(),
+            },
+        ))
     })
     .collect()
 }
