@@ -18,6 +18,9 @@ use crate::error::CalcError;
 lazy_static! {
     pub static ref UNIT_PREFIXES: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
+        m.insert("pico", -12);
+        m.insert("nano", -9);
+        m.insert("micro", -6);
         m.insert("milli", -3);
         m.insert("centi", -2);
         m.insert("deci", -1);
@@ -25,10 +28,16 @@ lazy_static! {
         m.insert("", 0);
         m.insert("hecto", 2);
         m.insert("kilo", 3);
+        m.insert("mega", 6);
+        m.insert("giga", 9);
+        m.insert("tera", 12);
         m
     };
     pub static ref UNIT_PREFIXES_ABBR: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
+        m.insert("p", -12);
+        m.insert("n", -9);
+        m.insert("µ", -6);
         m.insert("m", -3);
         m.insert("c", -2);
         m.insert("d", -1);
@@ -36,6 +45,9 @@ lazy_static! {
         m.insert("", 0);
         m.insert("h", 2);
         m.insert("k", 3);
+        m.insert("M", 6);
+        m.insert("G", 9);
+        m.insert("T", 12);
         m
     };
 }
@@ -193,6 +205,7 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "min"
                     | "mol"
                     | "moles"
+                    | "hz"
             ) {
                 UNIT_PREFIXES
                     .iter()
@@ -250,6 +263,10 @@ impl std::convert::TryFrom<&str> for Unit {
                     mult: 1.6603145,
                     exp: -24,
                     ..BaseUnit::Gram.into()
+                },
+                "hz" => Unit {
+                    desc: [0, 0, -1, 0, 0, 0, 0].into(),
+                    ..Unit::empty()
                 },
                 "L" | "liter" => Unit {
                     desc: [3, 0, 0, 0, 0, 0, 0].into(),
