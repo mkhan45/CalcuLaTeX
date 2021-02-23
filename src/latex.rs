@@ -172,13 +172,12 @@ impl ToLaTeX for Val {
                     .to_string();
 
                     if !unit_str.is_empty() {
-                        // the exponent is encoded into the unit
                         if args.scientific_notation && self.unit.exp != 0 {
                             format!(
                                 "{:.*}\\times 10^{{{}}} \\ {}",
                                 args.max_digits,
                                 self.num * self.unit.mult,
-                                self.unit.exp,
+                                self.unit.exp - display_exp * largest_power,
                                 unit_str
                             )
                         } else {
