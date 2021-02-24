@@ -86,7 +86,7 @@ impl ToString for BaseUnit {
             BaseUnit::Second => "s",
             BaseUnit::Ampere => "A",
             BaseUnit::Kelvin => "K",
-            BaseUnit::Mole => "M",
+            BaseUnit::Mole => "mol",
             BaseUnit::Candela => "cd",
         }
         .to_string()
@@ -225,8 +225,8 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "min"
                     | "mol"
                     | "moles"
+                    | "M"
                     | "hz"
-                    
             ) {
                 UNIT_PREFIXES
                     .iter()
@@ -248,7 +248,7 @@ impl std::convert::TryFrom<&str> for Unit {
                 "second" | "seconds" | "s" => BaseUnit::Second.into(),
                 "amp" | "amps" | "ampere" | "amperes" => BaseUnit::Ampere.into(),
                 "kelvin" | "K" => BaseUnit::Kelvin.into(),
-                "moles" | "mols" | "mol" | "mole" | "M" => BaseUnit::Mole.into(),
+                "moles" | "mols" | "mol" | "mole" => BaseUnit::Mole.into(),
                 "candela" => BaseUnit::Candela.into(),
                 "J" | "joule" => Unit {
                     desc: [2, 1, -2, 0, 0, 0, 0].into(),
@@ -294,6 +294,7 @@ impl std::convert::TryFrom<&str> for Unit {
                     exp: -3,
                     mult: 1.0,
                 },
+                "M" => Unit::try_from("moles").unwrap() / Unit::try_from("L").unwrap(),
                 _ => {
                     return Err(CalcError::UnitError(format!(
                         "{} is not a variable or a valid unit",

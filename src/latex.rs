@@ -126,7 +126,12 @@ impl ToLaTeX for UnitExpr {
 
 impl ToLaTeX for Val {
     fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
-        // dbg!(self.num, self.unit.exp);
+        let max_digits = if self.num.fract() == 0.0 {
+            0
+        } else {
+            args.max_digits
+        };
+
         Ok(match &args.unit_hint {
             Some(UnitHint {
                 unit,
@@ -135,7 +140,7 @@ impl ToLaTeX for Val {
                 let out = if args.scientific_notation && self.unit.exp != unit.exp {
                     format!(
                         "{:.*} \\times 10^{{{}}} \\ {} ",
-                        args.max_digits,
+                        max_digits,
                         self.num,
                         self.unit.exp - unit.exp,
                         pretty_string.to_latex()?.to_string()
@@ -143,7 +148,7 @@ impl ToLaTeX for Val {
                 } else {
                     format!(
                         "{:.*} \\ {}",
-                        args.max_digits,
+                        max_digits,
                         (self.num
                             / 10f64.powi((unit.exp - self.unit.exp) as i32)
                             / (unit.mult / self.unit.mult)),
@@ -177,7 +182,7 @@ impl ToLaTeX for Val {
                         if args.scientific_notation && self.unit.exp != 0 {
                             format!(
                                 "{:.*}\\times 10^{{{}}} \\ {}",
-                                args.max_digits,
+                                max_digits,
                                 self.num * self.unit.mult,
                                 self.unit.exp - display_exp * largest_power,
                                 unit_str
@@ -185,7 +190,7 @@ impl ToLaTeX for Val {
                         } else {
                             format!(
                                 "{:.*} \\ {}",
-                                args.max_digits,
+                                max_digits,
                                 self.num
                                     * self.unit.mult
                                     * 10f64
@@ -196,12 +201,12 @@ impl ToLaTeX for Val {
                     } else if args.scientific_notation && self.unit.exp != 0 {
                         format!(
                             "{:.*}\\times 10^{{{}}}",
-                            args.max_digits, self.num, self.unit.exp
+                            max_digits, self.num, self.unit.exp
                         )
                     } else {
                         format!(
                             "{:.*}",
-                            args.max_digits,
+                            max_digits,
                             self.num * 10f64.powi(self.unit.exp as i32)
                         )
                     }
