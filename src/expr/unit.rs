@@ -210,7 +210,11 @@ impl std::convert::TryFrom<&str> for Unit {
             // have to be hardcoded out.
             let (stripped, exp) = if !matches!(
                 s,
-                "day"
+                "ampere"
+                    | "amp"
+                    | "amps"
+                    | "amperes"
+                    | "day"
                     | "days"
                     | "hours"
                     | "hour"
@@ -222,6 +226,7 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "mol"
                     | "moles"
                     | "hz"
+                    
             ) {
                 UNIT_PREFIXES
                     .iter()
