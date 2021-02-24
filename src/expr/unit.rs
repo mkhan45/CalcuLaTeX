@@ -18,36 +18,52 @@ use crate::error::CalcError;
 lazy_static! {
     pub static ref UNIT_PREFIXES: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
+        m.insert("yocto", -24);
+        m.insert("zepto", -21);
+        m.insert("atto", -18);
+        m.insert("femto", -15);
         m.insert("pico", -12);
         m.insert("nano", -9);
         m.insert("micro", -6);
         m.insert("milli", -3);
         m.insert("centi", -2);
         m.insert("deci", -1);
-        m.insert("deca", 1);
         m.insert("", 0);
+        m.insert("deca", 1);
         m.insert("hecto", 2);
         m.insert("kilo", 3);
         m.insert("mega", 6);
         m.insert("giga", 9);
         m.insert("tera", 12);
+        m.insert("peta", 15);
+        m.insert("exa", 18);
+        m.insert("zetta", 21);
+        m.insert("yotta", 21);
         m
     };
     pub static ref UNIT_PREFIXES_ABBR: BiMap<&'static str, i64> = {
         let mut m = BiMap::new();
+        m.insert("y", -24);
+        m.insert("z", -21);
+        m.insert("a", -18);
+        m.insert("f", -15);
         m.insert("p", -12);
         m.insert("n", -9);
         m.insert("µ", -6);
         m.insert("m", -3);
         m.insert("c", -2);
         m.insert("d", -1);
-        m.insert("de", 1);
         m.insert("", 0);
+        m.insert("de", 1);
         m.insert("h", 2);
         m.insert("k", 3);
         m.insert("M", 6);
         m.insert("G", 9);
         m.insert("T", 12);
+        m.insert("P", 15);
+        m.insert("E", 18);
+        m.insert("Z", 21);
+        m.insert("Y", 24);
         m
     };
 }
@@ -194,7 +210,11 @@ impl std::convert::TryFrom<&str> for Unit {
             // have to be hardcoded out.
             let (stripped, exp) = if !matches!(
                 s,
-                "day"
+                "ampere"
+                    | "amp"
+                    | "amps"
+                    | "amperes"
+                    | "day"
                     | "days"
                     | "hours"
                     | "hour"
@@ -206,6 +226,7 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "mol"
                     | "moles"
                     | "hz"
+                    
             ) {
                 UNIT_PREFIXES
                     .iter()
