@@ -81,7 +81,11 @@ pub fn parse_naive_string(r: Pair<Rule>) -> Result<StringExpr, CalcError> {
 
 impl ToLaTeX for StringExpr {
     fn to_latex(&self) -> Result<LaTeX, CalcError> {
-        self.to_latex_ext(&FormatArgs::default())
+        if let LaTeX::Math(s) = self.to_latex_ext(&FormatArgs::default())? {
+            Ok(LaTeX::Math(format!("\\mathrm{{{}}}", s)))
+        } else {
+            unreachable!()
+        }
     }
 
     fn to_latex_ext(&self, _: &FormatArgs) -> Result<LaTeX, CalcError> {

@@ -87,9 +87,11 @@ impl ToLaTeX for Expr {
                     a.to_latex_ext(args)?.to_string(),
                     b.to_latex_ext(args)?.to_string()
                 )),
-                (Op::AddUnit(_, s), [v]) => {
-                    LaTeX::Math(format!("{}\\ {}", v.to_latex_ext(args)?.to_string(), s))
-                }
+                (Op::AddUnit(_, s), [v]) => LaTeX::Math(format!(
+                    "{}\\ \\mathrm{{{}}}",
+                    v.to_latex_ext(args)?.to_string(),
+                    s
+                )),
                 _ => todo!(),
             },
         })
@@ -246,34 +248,36 @@ impl ToLaTeX for Unit {
                         format!("{} {}\\,", acc, latexify_single_unit(unit_info))
                     });
 
-                if numerator_string.is_empty() && denominator_string.is_empty() {
-                    LaTeX::Math("".to_string())
+                let unit_str = if numerator_string.is_empty() && denominator_string.is_empty() {
+                    "".to_string()
                 } else if numerator_string.is_empty() {
                     if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
-                        LaTeX::Math(format!("\\frac{{1}}{{{}{}}}", prefix, denominator_string))
+                        format!("\\frac{{1}}{{{}{}}}", prefix, denominator_string)
                     } else {
-                        LaTeX::Math(format!(
+                        format!(
                             "\\frac{{1}}{{{}\\times 10^{{{}}}}}",
                             denominator_string, self.exp
-                        ))
+                        )
                     }
                 } else if denominator.is_empty() {
                     if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
-                        LaTeX::Math(format!("{}{}", prefix, numerator_string))
+                        format!("{}{}", prefix, numerator_string)
                     } else {
-                        LaTeX::Math(format!("{}\\times 10^{{{}}}", numerator_string, self.exp))
+                        format!("{}\\times 10^{{{}}}", numerator_string, self.exp)
                     }
                 } else if let Some(prefix) = UNIT_PREFIXES_ABBR.get_by_right(&self.exp) {
-                    LaTeX::Math(format!(
+                    format!(
                         "\\frac{{{}{}}}{{{}}}",
                         prefix, numerator_string, denominator_string
-                    ))
+                    )
                 } else {
-                    LaTeX::Math(format!(
+                    format!(
                         "\\frac{{{}}}{{{}}}\\times 10^{{{}}}",
                         numerator_string, denominator_string, self.exp
-                    ))
-                }
+                    )
+                };
+
+                LaTeX::Math(format!("\\mathrm{{{}}}", unit_str))
             }
             UnitDesc::Custom(_map) => {
                 todo!()
