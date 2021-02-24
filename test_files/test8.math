@@ -1,15 +1,14 @@
 !scientific
 
-h = 6.626 * 10^-34 J*s
-c = 2.998 * 10^8 m/s
+'''
+Rydberg Equation:
 
-f = 7.05 * 10^14 / s
+$ \frac{1}{\lambda} = (1.0974 \times 10^7 m^-1)(\frac{1}{n_1^2} - \frac{1}{n_2^2})$
+'''
 
-h = ?  J * s
-7.58 * 10^19 m = ?
-7.05 * 10^-19 = ?
+n_1 = 2
+n_2 = 3
+\lambda_{inv} = (1.0974 * 10^7 m^-1) * (1/n_1^2 - 1/n_2^2)
+\lambda_{inv} = ? nm^-1
 
-E = h * f = ? J
-
-1 hz = ? hz
-10 / s = ? hz
+\lambda = 1 / \lambda_{inv} = ? nm

@@ -1,6 +1,3 @@
-!digits 5
-!scientific
-
 '''
 Given a rock with mass $m_{rock}$ thrown by a force of $F_0$ acting over a duration $dt_{force}$,
 calculate its airtime and the max height it achieves.

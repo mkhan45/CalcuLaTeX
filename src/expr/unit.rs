@@ -214,10 +214,12 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "amp"
                     | "amps"
                     | "amperes"
+                    | "amu"
                     | "day"
                     | "days"
                     | "hours"
                     | "hour"
+                    | "hz"
                     | "meters"
                     | "meter"
                     | "m"
@@ -226,7 +228,8 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "mol"
                     | "moles"
                     | "M"
-                    | "hz"
+                    | "year"
+                    | "years"
             ) {
                 UNIT_PREFIXES
                     .iter()
