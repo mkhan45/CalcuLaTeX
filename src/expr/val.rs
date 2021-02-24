@@ -1,6 +1,8 @@
 use num::traits::Pow;
 use std::convert::TryFrom;
 
+use crate::error::CalcError;
+
 use super::unit::Unit;
 
 use std::fmt::{self, Debug, Display, Formatter};
@@ -36,7 +38,7 @@ impl Display for Val {
 }
 
 impl std::ops::Add<Val> for Val {
-    type Output = Val;
+    type Output = Result<Val, CalcError>;
 
     fn add(self, rhs: Val) -> Self::Output {
         if self.unit.desc == rhs.unit.desc {
@@ -57,7 +59,7 @@ impl std::ops::Add<Val> for Val {
                 num /= 10f64.powi(num.log10() as i32);
             }
 
-            Val {
+            Ok(Val {
                 num,
                 unit: Unit {
                     exp,
@@ -65,15 +67,19 @@ impl std::ops::Add<Val> for Val {
                     ..self.unit
                 },
             }
-            .clamp_num()
+            .clamp_num())
         } else {
-            panic!("Can't add")
+            Err(CalcError::Other(format!(
+                "Can't sub values with units {} and {}",
+                self.unit.to_string(),
+                rhs.unit.to_string()
+            )))
         }
     }
 }
 
 impl std::ops::Sub<Val> for Val {
-    type Output = Val;
+    type Output = Result<Val, CalcError>;
 
     fn sub(self, rhs: Val) -> Self::Output {
         if self.unit.desc == rhs.unit.desc {
@@ -94,7 +100,7 @@ impl std::ops::Sub<Val> for Val {
                 num /= 10f64.powi(num.log10() as i32);
             }
 
-            Val {
+            Ok(Val {
                 num,
                 unit: Unit {
                     exp,
@@ -102,9 +108,13 @@ impl std::ops::Sub<Val> for Val {
                     ..self.unit
                 },
             }
-            .clamp_num()
+            .clamp_num())
         } else {
-            panic!("Can't sub")
+            Err(CalcError::Other(format!(
+                "Can't sub values with units {} and {}",
+                self.unit.to_string(),
+                rhs.unit.to_string()
+            )))
         }
     }
 }
