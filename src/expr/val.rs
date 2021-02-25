@@ -1,6 +1,5 @@
 use num::traits::Pow;
 use std::convert::TryFrom;
-
 use super::unit::Unit;
 
 use std::fmt::{self, Debug, Display, Formatter};
@@ -219,7 +218,7 @@ where
 mod test {
 
     use super::*;
-    use crate::expr::{BaseUnit, Unit};
+    use crate::expr::{BaseUnit};
     use std::convert::TryInto;
 
     #[test]

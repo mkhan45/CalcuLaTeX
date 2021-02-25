@@ -109,7 +109,9 @@ mod test {
                 .next()
                 .unwrap(),
         )
+        .unwrap()
         .eval(&Scope::default())
+        .unwrap()
     }
 
     impl PartialEq<&str> for Val {
