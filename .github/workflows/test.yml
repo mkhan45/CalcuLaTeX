@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Configure
-      run: rustup update && cargo --version && rustc -- version
+      run: rustup update
     - name: Build Release
       run: cargo build --release
     - name: Build Debug
