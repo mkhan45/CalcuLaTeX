@@ -42,8 +42,8 @@ impl Expr {
                 }
             }
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {
-                (Op::Plus, [a, b]) => e(a)? + e(b)?,
-                (Op::Minus, [a, b]) => e(a)? - e(b)?,
+                (Op::Plus, [a, b]) => (e(a)? + e(b)?)?,
+                (Op::Minus, [a, b]) => (e(a)? - e(b)?)?,
                 (Op::Mul, [a, b]) => e(a)? * e(b)?,
                 (Op::Div, [a, b]) => e(a)? / e(b)?,
                 (Op::Exp, [a, b]) => e(a)?.pow(&e(b)?),

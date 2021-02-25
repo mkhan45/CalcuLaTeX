@@ -230,6 +230,17 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "M"
                     | "year"
                     | "years"
+                    | "pascal"
+                    | "coulomb"
+                    | "coulombs"
+                    | "T"
+                    | "tesla"
+                    | "teslas"
+                    | "kat"
+                    | "katal"
+                    | "katals"
+                    | "farad"
+                    | "farads"
             ) {
                 UNIT_PREFIXES
                     .iter()
@@ -297,6 +308,51 @@ impl std::convert::TryFrom<&str> for Unit {
                     exp: -3,
                     mult: 1.0,
                 },
+                "Pa" | "pascal" => Unit {
+                    desc: [-1, 1, -2, 0, 0, 0, 0].into(),
+                    exp: 3,
+                    mult: 1.0,
+                },
+                "W" | "watt" => Unit {
+                    desc: [2, 1, -3, 0, 0, 0, 0].into(),
+                    exp: 3,
+                    mult: 1.0,
+                },
+                "C" | "coulomb" | "coulombs" => {
+                    Unit::try_from("seconds").unwrap() * Unit::try_from("amps").unwrap()
+                }
+                "V" | "volt" | "volts" => {
+                    Unit::try_from("W").unwrap() * Unit::try_from("A").unwrap()
+                }
+                "F" | "farad" | "farads" => {
+                    Unit::try_from("C").unwrap() * Unit::try_from("V").unwrap()
+                }
+                "Ω" | "ohm" | "ohms" => {
+                    Unit::try_from("V").unwrap() / Unit::try_from("A").unwrap()
+                }
+                "S" | "siemen" | "siemens" => {
+                    Unit::try_from("A").unwrap() * Unit::try_from("V").unwrap()
+                }
+                "Wb" | "weber" | "webers" => {
+                    Unit::try_from("V").unwrap() * Unit::try_from("s").unwrap()
+                }
+                "T" | "tesla" | "teslas" => {
+                    Unit::try_from("Wb").unwrap() * Unit::try_from("m").unwrap().pow(2)
+                }
+                "H" | "henry" | "henries" => {
+                    Unit::try_from("Wb").unwrap() / Unit::try_from("A").unwrap().pow(2)
+                }
+                "lx" | "lux" => Unit::try_from("lm").unwrap() / Unit::try_from("m").unwrap().pow(2),
+                "Bq" | "becquerel" | "becquerels" => Unit::try_from("hz").unwrap(),
+                "Gy" | "gray" | "grays" => {
+                    Unit::try_from("J").unwrap() / Unit::try_from("kg").unwrap()
+                }
+                "Sy" | "sievert" | "sieverts" => {
+                    Unit::try_from("J").unwrap() / Unit::try_from("kg").unwrap()
+                }
+                "kat" | "katal" | "katals" => {
+                    Unit::try_from("mol").unwrap() / Unit::try_from("s").unwrap()
+                }
                 "M" => Unit::try_from("moles").unwrap() / Unit::try_from("L").unwrap(),
                 _ => {
                     return Err(CalcError::UnitError(format!(
