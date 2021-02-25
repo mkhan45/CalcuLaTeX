@@ -229,7 +229,7 @@ where
 mod test {
 
     use super::*;
-    use crate::expr::{BaseUnit, Unit};
+    use crate::expr::{BaseUnit};
     use std::convert::TryInto;
 
     #[test]
@@ -242,7 +242,7 @@ mod test {
     fn add_val_success() {
         let val1: Val = (0.9, BaseUnit::Meter).try_into().unwrap();
         let val2: Val = (0.1, BaseUnit::Meter).try_into().unwrap();
-        assert_eq!((val1 + val2).to_string(), "1 m");
+        assert_eq!((val1 + val2).unwrap().to_string(), "1 m");
     }
 
     // #[test]

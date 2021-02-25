@@ -490,7 +490,7 @@ mod tests {
         assert_eq!(&BaseUnit::Second.to_string(), "s");
         assert_eq!(&BaseUnit::Ampere.to_string(), "A");
         assert_eq!(&BaseUnit::Kelvin.to_string(), "K");
-        assert_eq!(&BaseUnit::Mole.to_string(), "M");
+        assert_eq!(&BaseUnit::Mole.to_string(), "mol");
         assert_eq!(&BaseUnit::Candela.to_string(), "cd");
     }
 
@@ -533,7 +533,7 @@ mod tests {
     #[test]
     fn pow_unit_mole() {
         let unit = Unit::from(BaseUnit::Mole).pow(3);
-        assert_eq!(unit.to_string(), "M^3");
+        assert_eq!(unit.to_string(), "mol^3");
     }
 
     #[test]
@@ -596,8 +596,8 @@ mod tests {
 
     #[test]
     fn try_from_unit_mole() {
-        let unit = Unit::try_from("mole").unwrap();
-        assert_eq!(unit.to_string(), "M");
+        let unit = Unit::try_from("mol").unwrap();
+        assert_eq!(unit.to_string(), "mol");
     }
 
     #[test]
@@ -611,18 +611,12 @@ mod tests {
 
     #[test]
     fn try_from_unit_newton() {
-        let unit1 = Unit::try_from("newton").unwrap();
-        assert_eq!(unit1.to_string(), "m g s^-2");
-
         let unit2 = Unit::try_from("N").unwrap();
         assert_eq!(unit2.to_string(), "m g s^-2");
     }
 
     #[test]
     fn try_from_unit_minute() {
-        let unit1 = Unit::try_from("minute").unwrap();
-        assert_eq!(unit1.to_string(), "s");
-
         let unit2 = Unit::try_from("min").unwrap();
         assert_eq!(unit2.to_string(), "s");
     }
@@ -702,7 +696,7 @@ mod tests {
     fn mult_mole() {
         let unit = Unit::try_from("moles").unwrap();
         let out = (unit.clone() * unit).to_string();
-        assert_eq!(out, "M^2");
+        assert_eq!(out, "mol^2");
     }
 
     #[test]
@@ -722,7 +716,7 @@ mod tests {
 
     #[test]
     fn mult_newton() {
-        let unit = Unit::try_from("newton").unwrap();
+        let unit = Unit::try_from("N").unwrap();
         let out = (unit.clone() * unit).to_string();
         assert_eq!(out, "m^2 g^2 s^-4");
     }
