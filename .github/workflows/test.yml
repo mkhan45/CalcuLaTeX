@@ -15,12 +15,16 @@ jobs:
         os: [ ubuntu-18.04, ubuntu-20.04, windows-latest ]
     steps:
     - uses: actions/checkout@v2
+    - name: Configure
+      run: rustup update
+      run: cargo --version
+      run: rustc -- version
     - name: Build Release
-      run: cargo build --release --verbose
+      run: cargo build --release
     - name: Build Debug
-      run: cargo build --verbose
+      run: cargo build
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test
     
   merge-main:
     name: Merge
