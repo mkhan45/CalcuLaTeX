@@ -38,7 +38,7 @@ impl Expr {
                 if let Some(v) = scope.variables.get(n) {
                     v.clone()
                 } else {
-                    (1, Unit::try_from(n)?).try_into().unwrap()
+                    (1.0, Unit::try_from(n)?).into()
                 }
             }
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {
