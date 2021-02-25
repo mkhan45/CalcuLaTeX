@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  push:
+    branches: [ testing ]
+  pull_request:
+    branches: [ testing ]
+
+jobs:
+  run-tests:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-18.04, ubuntu-20.04, windows-latest ]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Release
+      run: cargo build --release --verbose
+    - name: Build Debug
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    
+  merge-main:
+    name: Merge
+    needs: [ run-tests ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: '0'
+      - name: Merge Testing
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git checkout main
+          git merge testing
+      - name: Commit Main
+        run: |
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "Automatic merge"
+      - name: Push Changes
+        uses: ad-m/github-push-action@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
