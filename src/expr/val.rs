@@ -210,18 +210,16 @@ impl Val {
     }
 }
 
-impl<V, U> TryFrom<(V, U)> for Val
-where
+impl<V,U> From<(V,U)> for Val 
+where 
     V: Into<f64>,
     U: Into<Unit>,
 {
-    type Error = &'static str;
-
-    fn try_from((v, u): (V, U)) -> Result<Self, Self::Error> {
-        Ok(Val {
-            num: v.into(),
+    fn from((v,u): (V,U)) -> Val {
+        Self {
             unit: u.into(),
-        })
+            num:  v.into(),
+        }
     }
 }
 
@@ -234,21 +232,71 @@ mod test {
 
     #[test]
     fn create_val() {
-        let val: Val = (2.5, BaseUnit::Meter).try_into().unwrap();
+        let val: Val = (2.5, BaseUnit::Meter).into();
         assert_eq!(val.to_string(), "2.5 m");
     }
 
     #[test]
     fn add_val_success() {
-        let val1: Val = (0.9, BaseUnit::Meter).try_into().unwrap();
-        let val2: Val = (0.1, BaseUnit::Meter).try_into().unwrap();
+        let val1: Val = (0.9, BaseUnit::Meter).into();
+        let val2: Val = (0.1, BaseUnit::Meter).into();
         assert_eq!((val1 + val2).unwrap().to_string(), "1 m");
     }
 
-    // #[test]
-    // fn add_val_failure(){
-    //     let val1: Val = (0.9,BaseUnit::Meter).try_into().unwrap();
-    //     let val2: Val = (0.1,BaseUnit::Gram).try_into().unwrap();
-    //     assert_eq!((val1 + val2).to_string(),"");
-    // }
+    #[test]
+    fn add_val_failure(){
+        let val1: Val = (0.9,BaseUnit::Meter).into();
+        let val2: Val = (0.1,BaseUnit::Gram).into();
+        assert!((val1 + val2).is_err());
+    }
+
+    #[test]
+    fn sub_val_success() {
+        let val1: Val = (0.9, BaseUnit::Meter).into();
+        let val2: Val = (0.1, BaseUnit::Meter).into();
+        assert_eq!((val1 - val2).unwrap().to_string(), "0.8 m");
+    }
+
+    #[test]
+    fn sub_val_failure(){
+        let val1: Val = (0.9,BaseUnit::Meter).into();
+        let val2: Val = (0.1,BaseUnit::Gram).into();
+        assert!((val1 - val2).is_err());
+    }
+
+    #[test]
+    fn mult_val_m_m_success() {
+        let val1: Val = (1.5, BaseUnit::Meter).into();
+        let val2: Val = (2, BaseUnit::Meter).into();
+        assert_eq!((val1 * val2).to_string(), "3 m^2");
+    }
+
+    #[test]
+    fn mult_val_m_g_success() {
+        let val1: Val = (1.5,BaseUnit::Meter).into();
+        let val2: Val = (2.0,BaseUnit::Gram).into();
+        assert_eq!((val1 * val2).to_string(), "3 m g");
+    }
+
+    #[test]
+    fn mult_val_m_s_success() {
+        let val1: Val = (1.5,BaseUnit::Meter).into();
+        let val2: Val = (2.0,BaseUnit::Second).into();
+        assert_eq!((val1 * val2).to_string(), "3 m s");
+    }
+
+    #[test]
+    fn mult_val_m_A_success() {
+        let val1: Val = (1.5,BaseUnit::Meter).into();
+        let val2: Val = (2.0,BaseUnit::Ampere).into();
+        assert_eq!((val1 * val2).to_string(), "3 m A");
+    }
+
+    #[test]
+    fn mult_val_pow_success() {
+        let val1: Val = (1.5,BaseUnit::Meter).into();
+        let val2: Val = (2.0,BaseUnit::Ampere).into();
+        assert_eq!(val1.pow(&val2), "2.25 m^2");
+    }
+
 }
