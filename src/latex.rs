@@ -126,18 +126,18 @@ impl ToLaTeX for UnitExpr {
 
 impl ToLaTeX for Val {
     fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
-        let max_digits = if self.num.fract() == 0.0 {
-            0
-        } else {
-            args.max_digits
-        };
-
         Ok(match &args.unit_hint {
             Some(UnitHint {
                 unit,
                 pretty_string,
             }) if unit.desc == self.unit.desc => {
                 let out = if args.scientific_notation && self.unit.exp != unit.exp {
+                    let max_digits = if self.num.fract() == 0.0 {
+                        0
+                    } else {
+                        args.max_digits
+                    };
+
                     format!(
                         "{:.*} \\times 10^{{{}}} \\ {} ",
                         max_digits,
@@ -146,12 +146,20 @@ impl ToLaTeX for Val {
                         pretty_string.to_latex()?.to_string()
                     )
                 } else {
+                    let num = self.num
+                        / 10f64.powi((unit.exp - self.unit.exp) as i32)
+                        / (unit.mult / self.unit.mult);
+
+                    let max_digits = if num.fract() == 0.0 {
+                        0
+                    } else {
+                        args.max_digits
+                    };
+
                     format!(
                         "{:.*} \\ {}",
                         max_digits,
-                        (self.num
-                            / 10f64.powi((unit.exp - self.unit.exp) as i32)
-                            / (unit.mult / self.unit.mult)),
+                        num,
                         pretty_string.to_latex()?.to_string()
                     )
                 };
@@ -180,30 +188,52 @@ impl ToLaTeX for Val {
 
                     if !unit_str.is_empty() {
                         if args.scientific_notation && self.unit.exp != 0 {
+                            let num = self.num * self.unit.mult;
+
+                            let max_digits = if num.fract() == 0.0 {
+                                0
+                            } else {
+                                args.max_digits
+                            };
+
                             format!(
                                 "{:.*}\\times 10^{{{}}} \\ {}",
                                 max_digits,
-                                self.num * self.unit.mult,
+                                num,
                                 self.unit.exp - display_exp * largest_power,
                                 unit_str
                             )
                         } else {
-                            format!(
-                                "{:.*} \\ {}",
-                                max_digits,
-                                self.num
-                                    * self.unit.mult
-                                    * 10f64
-                                        .powi((self.unit.exp - display_exp * largest_power) as i32),
-                                unit_str
-                            )
+                            let num = self.num
+                                * self.unit.mult
+                                * 10f64.powi((self.unit.exp - display_exp * largest_power) as i32);
+
+                            let max_digits = if num.fract() == 0.0 {
+                                0
+                            } else {
+                                args.max_digits
+                            };
+
+                            format!("{:.*} \\ {}", max_digits, num, unit_str)
                         }
                     } else if args.scientific_notation && self.unit.exp != 0 {
+                        let max_digits = if self.num.fract() == 0.0 {
+                            0
+                        } else {
+                            args.max_digits
+                        };
+
                         format!(
                             "{:.*}\\times 10^{{{}}}",
                             max_digits, self.num, self.unit.exp
                         )
                     } else {
+                        let max_digits = if self.num.fract() == 0.0 {
+                            0
+                        } else {
+                            args.max_digits
+                        };
+
                         format!(
                             "{:.*}",
                             max_digits,

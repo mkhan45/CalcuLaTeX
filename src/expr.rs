@@ -1,7 +1,6 @@
 pub mod val;
 
 use std::convert::TryFrom;
-use std::convert::TryInto;
 
 use val::*;
 
