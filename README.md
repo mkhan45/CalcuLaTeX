@@ -78,10 +78,36 @@ https://github.com/mkhan45/CalcuLaTeX
 ```
 
 Outputs:
+
 ![tutorial](images/tutorial.png)
+
+___
+
+# CLI Usage
+
+Assuming the binary is called `calculatex`, running `calculatex [input] [output.pdf]` will watch the `input` file and output to `output.pdf` on change. This is meant for use with a PDF viewer which updates in realtime.
+
+To run the CalcuLaTeX cli, you'll also need pandoc and a texlive installation.
+
+___
+
+# Compiling
+
+To build CalcuLaTeX, you need a nightly Rust compiler and Cargo, preferably through rustup. After that, it's as simple as:
+
+```
+git clone git@github.com:mkhan45/CalcuLaTeX.git
+cd CalcuLaTeX
+
+# both of these output to target/release/
+cargo build --release # builds the library only
+cargo build --features build-binary --release # builds the CLI
+```
 
 ___
 
 # Contributing
 
 If you'd like to contribute, feel free to open an issue or send me an email. The code base is very messy right now but it's small enough to be pretty understandable. Performance suggestions are welcome, but only if they don't introduce any extra complexity. I haven't benchmarked anything but LaTeX compilation is pretty much guaranteed to take an order of magnitude longer than the interpreter.
+
+For guidelines, read [CONTRIBUTING.md](CONTRIBUTING.md)
