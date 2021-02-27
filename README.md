@@ -1,5 +1,8 @@
 # CalcuLaTeX
 
+![Test Status](https://img.shields.io/github/workflow/status/mkhan45/CalcuLaTeX/Test?label=Tests)
+![Crates.io](https://img.shields.io/crates/v/calculatex)
+
 Try it out at <https://mkhan45.github.io/CalcuLaTeX-Web/>
 
 ## Example
