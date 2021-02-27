@@ -227,7 +227,6 @@ mod test {
 
     use super::*;
     use crate::expr::BaseUnit;
-    use std::convert::TryInto;
 
     #[test]
     fn create_val() {

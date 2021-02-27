@@ -177,7 +177,10 @@ impl ToLaTeX for Val {
                     // TODO don't round this
                     let largest_power = self.unit.desc.largest_power().round().to_i64().unwrap();
 
-                    let display_exp = (self.unit.exp / largest_power.max(1)).clamp(-3, 3);
+                    let mut display_exp = (self.unit.exp / largest_power.max(1)).clamp(-3, 3);
+                    if display_exp == 1 || display_exp == 2 {
+                        display_exp = 0;
+                    }
 
                     let unit_str = Unit {
                         exp: display_exp,

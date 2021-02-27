@@ -54,7 +54,7 @@ lazy_static! {
         m.insert("c", -2);
         m.insert("d", -1);
         m.insert("", 0);
-        m.insert("de", 1);
+        m.insert("da", 1);
         m.insert("h", 2);
         m.insert("k", 3);
         m.insert("M", 6);
@@ -217,6 +217,9 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "amu"
                     | "day"
                     | "days"
+                    | "deg"
+                    | "degree"
+                    | "degrees"
                     | "hours"
                     | "hour"
                     | "hz"
@@ -264,6 +267,17 @@ impl std::convert::TryFrom<&str> for Unit {
                 "kelvin" | "K" => BaseUnit::Kelvin.into(),
                 "moles" | "mols" | "mol" | "mole" => BaseUnit::Mole.into(),
                 "candela" => BaseUnit::Candela.into(),
+                "rad" | "radian" | "radians" => Unit::empty(),
+                "rev" | "revolution" | "revolutions" => Unit {
+                    desc: [0; 7].into(),
+                    exp: 0,
+                    mult: 2.0 * std::f64::consts::PI,
+                },
+                "deg" | "degree" | "degrees" => Unit {
+                    desc: [0; 7].into(),
+                    exp: -2,
+                    mult: 1.745329,
+                },
                 "J" | "joule" => Unit {
                     desc: [2, 1, -2, 0, 0, 0, 0].into(),
                     exp: 3,
