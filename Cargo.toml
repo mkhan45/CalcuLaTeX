@@ -5,6 +5,9 @@ name = "calculatex"
 version = "0.1.0"
 repository = "https://github.com/mkhan45/calculatex"
 
+description = "A pretty printing calculator with support for units"
+license = "MPL-2.0"
+
 [lib]
 name = "calculatex"
 crate_type = ["cdylib", "rlib"]
