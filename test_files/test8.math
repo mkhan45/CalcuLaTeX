@@ -1,14 +1,1 @@
-!scientific
-
-'''
-Rydberg Equation:
-
-$ \frac{1}{\lambda} = (1.0974 \times 10^7 m^-1)(\frac{1}{n_1^2} - \frac{1}{n_2^2})$
-'''
-
-n_1 = 2
-n_2 = 3
-\lambda_{inv} = (1.0974 * 10^7 m^-1) * (1/n_1^2 - 1/n_2^2)
-\lambda_{inv} = ? nm^-1
-
-\lambda = 1 / \lambda_{inv} = ? nm
+(1.5 m)^(2/3) = ?

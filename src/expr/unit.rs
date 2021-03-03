@@ -114,7 +114,7 @@ pub const BASE_UNITS: [BaseUnit; 7] = [
 // map would just be [unit_name -> power]
 #[derive(Clone, Debug)]
 pub enum UnitDesc {
-    Base([Ratio<i8>; 7]),
+    Base([Ratio<i64>; 7]),
     Custom(BTreeMap<String, Ratio<u8>>),
 }
 
@@ -127,8 +127,8 @@ impl PartialEq for UnitDesc {
     }
 }
 
-impl From<[i8; 7]> for UnitDesc {
-    fn from(a: [i8; 7]) -> Self {
+impl From<[i64; 7]> for UnitDesc {
+    fn from(a: [i64; 7]) -> Self {
         UnitDesc::Base([
             a[0].into(),
             a[1].into(),
@@ -149,7 +149,7 @@ impl UnitDesc {
         }
     }
 
-    pub fn largest_power(&self) -> Ratio<i8> {
+    pub fn largest_power(&self) -> Ratio<i64> {
         match self {
             UnitDesc::Base(a) => *a.iter().max().unwrap_or(&Ratio::zero()),
             UnitDesc::Custom(_) => todo!(),
