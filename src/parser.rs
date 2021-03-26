@@ -12,6 +12,8 @@ use unit::parse_unit_expr;
 pub mod expr;
 use expr::parse_expr;
 
+pub mod fn_call;
+
 pub mod naive_string;
 
 #[derive(Parser)]

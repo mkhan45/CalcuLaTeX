@@ -1,8 +1,8 @@
-use crate::CalcError;
 use crate::{
     expr::unit_expr::{UnitExpr, UnitOp},
     parser::naive_string::StringExpr,
 };
+use crate::{parser::fn_call::FnCall, CalcError};
 
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
@@ -61,6 +61,7 @@ impl ToLaTeX for Expr {
         Ok(match self {
             Expr::Atom(v) => LaTeX::Math(v.to_latex_ext(args)?.to_string()),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
+            Expr::FnCall(f) => LaTeX::Math(f.to_latex_ext(args)?.to_string()),
             Expr::Cons(op, e) => match (op, e.as_slice()) {
                 (Op::Plus, [a, b, ..]) => LaTeX::Math(format!(
                     "({} + {})",
@@ -335,5 +336,21 @@ impl ToLaTeX for Unit {
                 todo!()
             }
         })
+    }
+}
+
+impl ToLaTeX for FnCall {
+    fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
+        let mut arg_latex = self
+            .args
+            .iter()
+            .map(|a| a.to_latex_ext(args))
+            .fold(Ok(String::new()), |res: Result<String, CalcError>, arg| {
+                Ok(format!("{}{},", res?, arg?.to_string()))
+            })?;
+
+        arg_latex.pop();
+
+        Ok(LaTeX::Math(format!("{}({})", self.name, arg_latex)))
     }
 }
