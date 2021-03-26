@@ -6,7 +6,7 @@ use pest::iterators::{Pair, Pairs};
 use crate::{
     expr::val::Val,
     expr::{Expr, Op},
-    parser::{fn_call, parse_unit_expr, Rule},
+    parser::{parse_unit_expr, Rule},
 };
 
 use crate::latex::ToLaTeX;

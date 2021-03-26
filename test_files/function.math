@@ -1,5 +1,6 @@
-x = sin(3.1415) = ?
+!digits 10
 
-x = 3 km
-
-x^2 = ?
+sin(\pi) = ?
+cos(\pi) = ?
+tan(1) = ?
+\pi / 2 = ?

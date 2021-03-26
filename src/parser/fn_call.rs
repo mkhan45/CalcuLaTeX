@@ -1,15 +1,10 @@
 use crate::expr::Expr;
 use crate::parser::parse_expr;
 use crate::CalcError;
-use std::convert::TryInto;
 
-use pest::iterators::{Pair, Pairs};
+use pest::iterators::Pair;
 
-use crate::{
-    expr::unit::Unit,
-    expr::unit_expr::{UnitExpr, UnitOp},
-    parser::Rule,
-};
+use crate::parser::Rule;
 
 #[derive(Debug)]
 pub struct FnCall {
