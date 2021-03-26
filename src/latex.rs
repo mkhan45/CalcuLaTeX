@@ -175,24 +175,13 @@ impl ToLaTeX for Val {
             }
             None => {
                 let out = {
-                    /*
-                     * 1 km * 1 km = 1 * 10^3 m * 1 * 10^3 m = 1 * 10^6 m^2 = 1 km^2
-                     * 1 km * 1 km^(2/3) = 1 * 10^3 m * 1 * 10^3 m^(2/3) = 1 * 10^6 m^5/3
-                     *                                                   = 1 * 10^1 km^5/3
-                     * */
-
                     // TODO don't round this
-                    let largest_power_fract = self.unit.desc.largest_power();
                     let largest_power = self.unit.desc.largest_power().round().to_i64().unwrap();
-                    let display_exp = if !largest_power_fract.is_integer() {
-                        0
-                    } else {
-                        let mut display_exp = (self.unit.exp / largest_power.max(1)).clamp(-3, 3);
-                        if display_exp == 1 || display_exp == 2 {
-                            display_exp = 0;
-                        }
-                        display_exp
-                    };
+
+                    let mut display_exp = (self.unit.exp / largest_power.max(1)).clamp(-3, 3);
+                    if display_exp == 1 || display_exp == 2 {
+                        display_exp = 0;
+                    }
 
                     let unit_str = Unit {
                         exp: display_exp,
@@ -221,10 +210,7 @@ impl ToLaTeX for Val {
                         } else {
                             let num = self.num
                                 * self.unit.mult
-                                * 10f64.powf(
-                                    (self.unit.exp - display_exp) as f64
-                                        * largest_power.to_f64().unwrap(),
-                                );
+                                * 10f64.powi((self.unit.exp - display_exp * largest_power) as i32);
 
                             let max_digits = if num.fract() == 0.0 {
                                 0
@@ -285,7 +271,7 @@ impl ToLaTeX for Unit {
                         }
                     });
 
-                let latexify_single_unit = |(pow, unit): &(&Ratio<i64>, &BaseUnit)| {
+                let latexify_single_unit = |(pow, unit): &(&Ratio<i8>, &BaseUnit)| {
                     if pow.abs() == Ratio::one() {
                         unit.to_string()
                     } else {

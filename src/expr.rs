@@ -67,7 +67,7 @@ impl Expr {
                 (Op::Minus, [a, b]) => (e(a)? - e(b)?)?,
                 (Op::Mul, [a, b]) => e(a)? * e(b)?,
                 (Op::Div, [a, b]) => e(a)? / e(b)?,
-                (Op::Exp, [a, b]) => e(a)?.pow(&e(b)?)?,
+                (Op::Exp, [a, b]) => e(a)?.pow(&e(b)?),
                 (Op::AddUnit(u, _), [v]) => e(v)?.with_unit(&u),
                 _ => return Err(CalcError::MathError),
             },

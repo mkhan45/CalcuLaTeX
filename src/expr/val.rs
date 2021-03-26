@@ -1,9 +1,8 @@
 use num::traits::Pow;
-use num::{rational::Ratio, FromPrimitive};
 
 use crate::error::CalcError;
 
-use super::unit::{Unit, UnitDesc};
+use super::unit::Unit;
 
 use std::fmt::{self, Debug, Display, Formatter};
 
@@ -174,58 +173,16 @@ impl Val {
         }
     }
 
-    pub fn pow(&self, rhs: &Val) -> Result<Val, CalcError> {
-        if rhs.unit.desc.is_empty() && rhs.num.fract() == 0.0 {
+    pub fn pow(&self, rhs: &Val) -> Val {
+        if rhs.unit.desc.is_empty() || rhs.num.fract() == 0.0 {
             let p = rhs.num * 10f64.powi(rhs.unit.exp as i32);
             let unit = self.unit.pow(p as i64);
-            Ok(Val {
+            Val {
                 num: self.num.pow(p),
                 unit,
-            })
-        } else if rhs.unit.desc.is_empty() {
-            /*
-             * (8 * 10^24 g)^(5/9)
-             * (8^(5/9) * (10^(small))^(5/9) * 10^big)
-             * 8^(5/9) * (10^(24*5/9)
-             * 8^(5/9) * (10^(120/9))
-             * 8^(5/9) * 10^(3/9) * 10^13
-             */
-
-            let first_term = self.num.powf(rhs.num * 10f64.powf(rhs.unit.exp as f64));
-
-            let total_fract = self.unit.exp as f64 * rhs.num;
-            let floor = total_fract.floor();
-            let remaining = total_fract - floor;
-
-            let second_term = 10f64.powf(remaining);
-
-            // third term is 10^floor
-
-            let desc = match self.unit.desc {
-                UnitDesc::Base(a) => {
-                    let mut arr = a.clone();
-                    arr.iter_mut().for_each(|e| {
-                        *e *= Ratio::<i64>::from_f64(rhs.num * 10f64.powf(rhs.unit.exp as f64))
-                            .unwrap()
-                    });
-                    UnitDesc::Base(arr)
-                }
-                UnitDesc::Custom(_) => todo!(),
-            };
-
-            Ok(Val {
-                num: first_term * second_term,
-                unit: Unit {
-                    desc,
-                    exp: floor as i64,
-                    mult: self.unit.mult.pow(rhs.num.powi(rhs.unit.exp as i32)),
-                },
             }
-            .clamp_num())
         } else {
-            Err(CalcError::Other(format!(
-                "Can't exponentiate by number with a nonempty unit"
-            )))
+            panic!()
         }
     }
 
@@ -267,8 +224,6 @@ where
 
 #[cfg(test)]
 mod test {
-
-    use std::convert::TryFrom;
 
     use super::*;
     use crate::expr::BaseUnit;
@@ -337,20 +292,8 @@ mod test {
 
     #[test]
     fn mult_val_pow_success() {
-        let val1: Val = Val::from((1.5, BaseUnit::Meter)).clamp_num();
-        let val2: Val = (2.0 / 3.0, Unit::empty()).into();
-        assert_eq!(val1.pow(&val2).unwrap(), "1.3103706971044482 m^2/3");
-
-        let val1: Val = Val::from((5e14, BaseUnit::Meter)).clamp_num();
-        let val2: Val = (2.0 / 3.0, Unit::empty()).into();
-        assert_eq!(val1.pow(&val2).unwrap(), "6299605249.474349 m^2/3");
-
         let val1: Val = (1.5, BaseUnit::Meter).into();
-        let val2: Val = (17.0 / 5.0, Unit::empty()).into();
-        assert_eq!(val1.pow(&val2).unwrap(), "3.969266701020773 m^17/5");
-
-        let val1: Val = (9.5, Unit::try_from("kilometer").unwrap()).into();
-        let val2: Val = (1.0 / 3.0, Unit::empty()).into();
-        assert_eq!(val1.pow(&val2).unwrap(), "21.179117921274468 m^1/3");
+        let val2: Val = (2.0, BaseUnit::Ampere).into();
+        assert_eq!(val1.pow(&val2), "2.25 m^2");
     }
 }
