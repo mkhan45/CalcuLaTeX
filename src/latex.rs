@@ -13,6 +13,12 @@ use num::Signed;
 use num::Zero;
 use num::{rational::Ratio, ToPrimitive};
 
+// The plan I had in mind when I started this was for LaTeX to be a proper
+// LaTeX subset AST.
+// However, I got lazy so it's basically just a string. All LaTeX variants that
+// are ever constructed are just LaTeX::Math(_). This should change eventually
+// to allow for string interpolation and other nice features.
+
 pub enum LaTeX {
     Text(String),
     Math(String),
@@ -255,6 +261,7 @@ impl ToLaTeX for Val {
 impl ToLaTeX for Unit {
     fn to_latex_ext(&self, _: &FormatArgs) -> Result<LaTeX, CalcError> {
         Ok(match self.desc.clone() {
+            d @ _ if d.is_empty() => LaTeX::Math("".to_string()),
             UnitDesc::Base(arr) => {
                 let mut numerator = Vec::new();
                 let mut denominator = Vec::new();
