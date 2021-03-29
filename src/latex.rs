@@ -344,6 +344,9 @@ impl ToLaTeX for FnCall {
 
         arg_latex.pop();
 
-        Ok(LaTeX::Math(format!("{}({})", self.name, arg_latex)))
+        Ok(LaTeX::Math(format!(
+            "\\text{{{}}}({})",
+            self.name, arg_latex
+        )))
     }
 }

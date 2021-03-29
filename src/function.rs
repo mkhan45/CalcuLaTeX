@@ -6,8 +6,10 @@ pub fn eval_fn_call(fc: &FnCall, scope: &Scope) -> Result<Val, CalcError> {
     match (fc.name.as_str(), &fc.args.as_slice()) {
         ("sin", &[a]) => {
             let mut a = e(&a)?;
-            if a.unit == Unit::empty() {
-                a.num = a.num.sin();
+            if a.unit.desc.is_empty() {
+                a.num = (a.num * a.unit.mult * 10f64.powi(a.unit.exp as i32)).sin();
+                a.unit = Unit::empty();
+                a.clamp_num();
                 Ok(a)
             } else {
                 return Err(CalcError::UnitError(
@@ -22,8 +24,10 @@ pub fn eval_fn_call(fc: &FnCall, scope: &Scope) -> Result<Val, CalcError> {
         }
         ("cos", &[a]) => {
             let mut a = e(&a)?;
-            if a.unit == Unit::empty() {
-                a.num = a.num.cos();
+            if a.unit.desc.is_empty() {
+                a.num = (a.num * a.unit.mult * 10f64.powi(a.unit.exp as i32)).cos();
+                a.unit = Unit::empty();
+                a.clamp_num();
                 Ok(a)
             } else {
                 return Err(CalcError::UnitError(
@@ -39,7 +43,9 @@ pub fn eval_fn_call(fc: &FnCall, scope: &Scope) -> Result<Val, CalcError> {
         ("tan", &[a]) => {
             let mut a = e(&a)?;
             if a.unit == Unit::empty() {
-                a.num = a.num.tan();
+                a.num = (a.num * a.unit.mult * 10f64.powi(a.unit.exp as i32)).tan();
+                a.unit = Unit::empty();
+                a.clamp_num();
                 Ok(a)
             } else {
                 return Err(CalcError::UnitError(
