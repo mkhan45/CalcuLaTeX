@@ -72,6 +72,16 @@ by using !digits \{n\} or !scientific
 1 kg = ? mg
 
 '''
+Basic mathematical trig functions are supported (with more to come).
+
+Additionally, builtin constants include $\pi$ and $e$.
+'''
+
+sin(\pi) = ?
+cos(\pi) = ?
+e = ?
+
+'''
 Escape raw latex with three single quotes.
 
 There's still plenty of bugs, so feel free to \\
