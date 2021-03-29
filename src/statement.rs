@@ -1,14 +1,34 @@
-use crate::latex::FormatArgs;
 use crate::latex::UnitHint;
 use crate::CalcError;
+use crate::{expr::unit::Unit, latex::FormatArgs};
 use std::collections::BTreeMap;
 
 use crate::{expr::val::Val, parser};
 use crate::{expr::Expr, latex::ToLaTeX};
 
-#[derive(Default)]
 pub struct Scope {
     pub variables: BTreeMap<String, Val>,
+}
+
+impl Default for Scope {
+    fn default() -> Self {
+        let mut variables = BTreeMap::new();
+        variables.insert(
+            "\\pi".to_owned(),
+            Val {
+                num: std::f64::consts::PI,
+                unit: Unit::empty(),
+            },
+        );
+        variables.insert(
+            "e".to_owned(),
+            Val {
+                num: std::f64::consts::E,
+                unit: Unit::empty(),
+            },
+        );
+        Scope { variables }
+    }
 }
 
 #[derive(Debug)]

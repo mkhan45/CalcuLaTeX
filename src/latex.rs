@@ -1,8 +1,8 @@
-use crate::CalcError;
 use crate::{
     expr::unit_expr::{UnitExpr, UnitOp},
     parser::naive_string::StringExpr,
 };
+use crate::{parser::fn_call::FnCall, CalcError};
 
 use crate::expr::unit::BASE_UNITS;
 use crate::expr::unit::UNIT_PREFIXES_ABBR;
@@ -12,6 +12,12 @@ use num::One;
 use num::Signed;
 use num::Zero;
 use num::{rational::Ratio, ToPrimitive};
+
+// The plan I had in mind when I started this was for LaTeX to be a proper
+// LaTeX subset AST.
+// However, I got lazy so it's basically just a string. All LaTeX variants that
+// are ever constructed are just LaTeX::Math(_). This should change eventually
+// to allow for string interpolation and other nice features.
 
 pub enum LaTeX {
     Text(String),
@@ -61,6 +67,7 @@ impl ToLaTeX for Expr {
         Ok(match self {
             Expr::Atom(v) => LaTeX::Math(v.to_latex_ext(args)?.to_string()),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
+            Expr::FnCall(f) => LaTeX::Math(f.to_latex_ext(args)?.to_string()),
             Expr::Cons(op, e) => match (op, e.as_slice()) {
                 (Op::Plus, [a, b, ..]) => LaTeX::Math(format!(
                     "({} + {})",
@@ -177,7 +184,10 @@ impl ToLaTeX for Val {
                     // TODO don't round this
                     let largest_power = self.unit.desc.largest_power().round().to_i64().unwrap();
 
-                    let display_exp = (self.unit.exp / largest_power.max(1)).clamp(-3, 3);
+                    let mut display_exp = (self.unit.exp / largest_power.max(1)).clamp(-3, 3);
+                    if display_exp == 1 || display_exp == 2 {
+                        display_exp = 0;
+                    }
 
                     let unit_str = Unit {
                         exp: display_exp,
@@ -251,6 +261,7 @@ impl ToLaTeX for Val {
 impl ToLaTeX for Unit {
     fn to_latex_ext(&self, _: &FormatArgs) -> Result<LaTeX, CalcError> {
         Ok(match self.desc.clone() {
+            d @ _ if d.is_empty() => LaTeX::Math("".to_string()),
             UnitDesc::Base(arr) => {
                 let mut numerator = Vec::new();
                 let mut denominator = Vec::new();
@@ -318,5 +329,24 @@ impl ToLaTeX for Unit {
                 todo!()
             }
         })
+    }
+}
+
+impl ToLaTeX for FnCall {
+    fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
+        let mut arg_latex = self
+            .args
+            .iter()
+            .map(|a| a.to_latex_ext(args))
+            .fold(Ok(String::new()), |res: Result<String, CalcError>, arg| {
+                Ok(format!("{}{},", res?, arg?.to_string()))
+            })?;
+
+        arg_latex.pop();
+
+        Ok(LaTeX::Math(format!(
+            "\\text{{{}}}({})",
+            self.name, arg_latex
+        )))
     }
 }

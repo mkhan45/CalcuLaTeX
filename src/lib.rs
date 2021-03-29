@@ -8,6 +8,8 @@ use statement::State;
 pub mod error;
 use error::CalcError;
 
+pub mod function;
+
 pub fn generate_latex(input: &str) -> Result<String, CalcError> {
     let mut state = State::new(input)?;
     state.exec()?;

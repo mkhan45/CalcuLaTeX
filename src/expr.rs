@@ -1,5 +1,6 @@
 pub mod val;
 
+use crate::{function::eval_fn_call, parser::fn_call::FnCall};
 use std::convert::TryFrom;
 
 use val::*;
@@ -15,6 +16,7 @@ use crate::{error::CalcError, statement::Scope};
 pub enum Expr {
     Atom(Val),
     Ident(String),
+    FnCall(FnCall),
     Cons(Op, Vec<Expr>),
 }
 
@@ -23,6 +25,7 @@ impl std::fmt::Display for Expr {
         match self {
             Expr::Atom(v) => write!(f, "{}", v),
             Expr::Ident(n) => write!(f, "{}", n),
+            Expr::FnCall(fc) => write!(f, "{:?}", fc),
             Expr::Cons(op, e) => write!(f, "({:?}, {:?})", op, e),
         }
     }
@@ -40,6 +43,7 @@ impl Expr {
                     (1.0, Unit::try_from(n)?).into()
                 }
             }
+            Expr::FnCall(fc) => eval_fn_call(fc, scope)?,
             Expr::Cons(op, xs) => match (op, xs.as_slice()) {
                 (Op::Plus, [a, b]) => (e(a)? + e(b)?)?,
                 (Op::Minus, [a, b]) => (e(a)? - e(b)?)?,

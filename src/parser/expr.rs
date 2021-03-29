@@ -1,3 +1,4 @@
+use crate::parser::fn_call::parse_fn_call;
 use crate::parser::naive_string::parse_naive_string;
 use crate::CalcError;
 use pest::iterators::{Pair, Pairs};
@@ -18,6 +19,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Result<Expr, CalcError> {
             let mut lhs = match nx.as_rule() {
                 Rule::number => Expr::Atom(Val::empty(nx.as_str().trim().parse::<f64>().unwrap())),
                 Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
+                Rule::fn_call => Expr::FnCall(parse_fn_call(nx)?),
                 Rule::expression => parse_expr(nx)?,
                 _ => {
                     dbg!(nx);
