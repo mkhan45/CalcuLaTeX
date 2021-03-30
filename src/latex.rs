@@ -238,17 +238,14 @@ impl ToLaTeX for Val {
                             max_digits, self.num, self.unit.exp
                         )
                     } else {
-                        let max_digits = if self.num.fract() == 0.0 {
+                        let num = self.num * 10f64.powi(self.unit.exp as i32);
+                        let max_digits = if num.fract() == 0.0 {
                             0
                         } else {
                             args.max_digits
                         };
 
-                        format!(
-                            "{:.*}",
-                            max_digits,
-                            self.num * 10f64.powi(self.unit.exp as i32)
-                        )
+                        format!("{:.*}", max_digits, num)
                     }
                 };
 
