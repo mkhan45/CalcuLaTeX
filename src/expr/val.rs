@@ -187,6 +187,10 @@ impl Val {
     }
 
     pub fn clamp_num(&self) -> Val {
+        if self.num == 0.0 {
+            return self.clone();
+        }
+
         let num_log10 = self.num.log10() as i64;
         let mult_log10 = self.unit.mult.log10() as i64;
 
