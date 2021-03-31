@@ -47,5 +47,9 @@ mod tests {
 
     test_file!(basic);
     test_file!(function);
+    test_file!(chemistry);
     test_file!(tutorial);
+    test_file!(power_conversion);
+    test_file!(adv_unit_expr);
+    test_file!(amu_precision);
 }
