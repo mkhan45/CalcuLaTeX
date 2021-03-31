@@ -2,7 +2,7 @@
 authors = ["Mikail Khan <mikail.khan45@gmail.com>"]
 edition = "2018"
 name = "calculatex"
-version = "0.1.1"
+version = "0.1.2"
 repository = "https://github.com/mkhan45/calculatex"
 
 description = "A pretty printing calculator with support for units"
