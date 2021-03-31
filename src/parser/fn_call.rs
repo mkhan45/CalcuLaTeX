@@ -6,7 +6,7 @@ use pest::iterators::Pair;
 
 use crate::parser::Rule;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FnCall {
     pub name: String,
     pub args: Vec<Expr>,

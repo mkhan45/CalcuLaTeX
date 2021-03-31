@@ -87,13 +87,13 @@ impl ToLaTeX for Expr {
                 )),
                 (Op::Div, [a, b, ..]) => LaTeX::Math(format!(
                     "\\frac{{{}}}{{{}}}",
-                    a.to_latex_ext(args)?.to_string(),
-                    b.to_latex_ext(args)?.to_string()
+                    a.remove_parens().to_latex_ext(args)?.to_string(),
+                    b.remove_parens().to_latex_ext(args)?.to_string()
                 )),
                 (Op::Exp, [a, b, ..]) => LaTeX::Math(format!(
                     "{}^{{{}}}",
                     a.to_latex_ext(args)?.to_string(),
-                    b.to_latex_ext(args)?.to_string()
+                    b.remove_parens().to_latex_ext(args)?.to_string()
                 )),
                 (Op::AddUnit(_, s), [v]) => LaTeX::Math(format!(
                     "{}\\ \\mathrm{{{}}}",

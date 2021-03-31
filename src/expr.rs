@@ -12,7 +12,7 @@ pub mod unit_expr;
 
 use crate::{error::CalcError, statement::Scope};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     Atom(Val),
     ParenExpr(Box<Expr>),
@@ -57,6 +57,14 @@ impl Expr {
                 _ => return Err(CalcError::MathError),
             },
         })
+    }
+
+    pub fn remove_parens(&self) -> Self {
+        if let Expr::ParenExpr(b) = self {
+            *b.clone()
+        } else {
+            self.clone()
+        }
     }
 }
 
