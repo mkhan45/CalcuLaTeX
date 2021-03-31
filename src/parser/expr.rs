@@ -20,7 +20,7 @@ pub fn parse_expr(r: Pair<Rule>) -> Result<Expr, CalcError> {
                 Rule::number => Expr::Atom(Val::empty(nx.as_str().trim().parse::<f64>().unwrap())),
                 Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
                 Rule::fn_call => Expr::FnCall(parse_fn_call(nx)?),
-                Rule::expression => parse_expr(nx)?,
+                Rule::expression => Expr::ParenExpr(Box::new(parse_expr(nx)?)),
                 _ => {
                     dbg!(nx);
                     unreachable!();

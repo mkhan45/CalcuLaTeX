@@ -190,7 +190,7 @@ impl Unit {
         if rhs > 0 {
             (0..rhs - 1).for_each(|_| ret = ret.clone() * self.clone());
         } else if rhs == 0 {
-            todo!();
+            ret = Unit::empty();
         } else {
             (0..rhs.abs() + 1).for_each(|_| ret = ret.clone() / self.clone());
         }

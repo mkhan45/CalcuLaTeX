@@ -66,16 +66,17 @@ impl ToLaTeX for Expr {
     fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
         Ok(match self {
             Expr::Atom(v) => LaTeX::Math(v.to_latex_ext(args)?.to_string()),
+            Expr::ParenExpr(v) => LaTeX::Math(format!("({})", v.to_latex_ext(args)?.to_string())),
             Expr::Ident(n) => LaTeX::Math(n.to_string()),
             Expr::FnCall(f) => LaTeX::Math(f.to_latex_ext(args)?.to_string()),
             Expr::Cons(op, e) => match (op, e.as_slice()) {
                 (Op::Plus, [a, b, ..]) => LaTeX::Math(format!(
-                    "({} + {})",
+                    "{} + {}",
                     a.to_latex_ext(args)?.to_string(),
                     b.to_latex_ext(args)?.to_string()
                 )),
                 (Op::Minus, [a, b, ..]) => LaTeX::Math(format!(
-                    "({} - {})",
+                    "{} - {}",
                     a.to_latex_ext(args)?.to_string(),
                     b.to_latex_ext(args)?.to_string()
                 )),
@@ -86,13 +87,13 @@ impl ToLaTeX for Expr {
                 )),
                 (Op::Div, [a, b, ..]) => LaTeX::Math(format!(
                     "\\frac{{{}}}{{{}}}",
-                    a.to_latex_ext(args)?.to_string(),
-                    b.to_latex_ext(args)?.to_string()
+                    a.remove_parens().to_latex_ext(args)?.to_string(),
+                    b.remove_parens().to_latex_ext(args)?.to_string()
                 )),
                 (Op::Exp, [a, b, ..]) => LaTeX::Math(format!(
                     "{}^{{{}}}",
                     a.to_latex_ext(args)?.to_string(),
-                    b.to_latex_ext(args)?.to_string()
+                    b.remove_parens().to_latex_ext(args)?.to_string()
                 )),
                 (Op::AddUnit(_, s), [v]) => LaTeX::Math(format!(
                     "{}\\ \\mathrm{{{}}}",

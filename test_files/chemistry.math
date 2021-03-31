@@ -1,0 +1,16 @@
+!scientific
+
+k = ln(2) / (4.47 * 10^9 * 1 year) = ?
+
+e = 2.71828
+
+hl = 4.47 * 10^9 years
+t_{est} = 3.8 * 10^9 years
+
+\frac{nt}{n0} = 1 / e^(k * t_{est}) = ?
+
+mass = 1.515 g
+
+x = (mass - (\frac{nt}{n0} * mass)) / \frac{nt}{n0} = ?
+
+x * (1 mol / 238 g) * (206 g / 1 mol) = ?

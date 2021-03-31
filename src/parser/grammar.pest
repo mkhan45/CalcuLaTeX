@@ -5,8 +5,8 @@ ident = @{ (ASCII_ALPHA | "\\") ~ ( ASCII_ALPHANUMERIC | "_" | "{" | "}" )* }
 unit_expr = { unit_term ~ (unit_operation ~ unit_term)* }
     unit_operation = { "*" | "/" }
     unit_postfix_operation = { "^" ~ integer }
-    unit = { ASCII_ALPHA+ | "1" }
-    unit_term = _{ unit ~ unit_postfix_operation | paren_unit_expr | unit ~ unit_expr* }
+    unit = { ASCII_ALPHA+ }
+    unit_term = _{ unit ~ unit_postfix_operation | paren_unit_expr | "1" ~ unit_operation | unit }
     paren_unit_expr = _{ "(" ~ unit_expr ~ ")" }
 
 expression = { term ~ (operation ~ term)* }
