@@ -1,0 +1,38 @@
+integer = @{ "-"? ~ ASCII_DIGIT+ }
+number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
+ident = @{ (ASCII_ALPHA | "\\") ~ ( ASCII_ALPHANUMERIC | "_" | "{" | "}" )* }
+
+unit_expr = { unit_term ~ (unit_operation ~ unit_term)* }
+    unit_operation = { "*" | "/" }
+    unit_postfix_operation = { "^" ~ integer }
+    unit = { ASCII_ALPHA+ }
+    unit_term = _{ unit ~ unit_postfix_operation | paren_unit_expr | "1" ~ unit_operation | unit }
+    paren_unit_expr = _{ "(" ~ unit_expr ~ ")" }
+
+expression = { term ~ (operation ~ term)* }
+    term = _{ fn_call | paren_expr | (ident | number) ~ unit_expr* }
+    paren_expr = _{"(" ~ expression ~ ")"}
+    fn_call = { ident ~ "(" ~ expression ~ ("," ~ expression )*  ~ ")" }
+
+operation = @{ add | subtract | multiply | divide | power }
+    add      = { "+" }
+    subtract = { "-" }
+    multiply = { "*" }
+    divide   = { "/" }
+    power    = { "^" }
+
+statement = { latex_block | line_gap_stmt | ((format_directive | dec_print_expr | print_expr | var_dec | error) ~ NEWLINE) }
+    error = { (!NEWLINE ~ ANY)* }
+    line_gap_stmt = { WHITESPACE* ~ NEWLINE }
+    latex_block = { "'''" ~ (!"'''" ~ ANY)* ~ "'''" }
+    var_dec = { ident ~ "=" ~ expression }
+    print_expr = { expression ~ "=" ~ "?" ~ unit_expr? }
+    dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" ~ unit_expr? }
+    format_directive = _{ "!" ~ (digit_set | set_scientific) }
+        digit_set = { "digits" ~ " "* ~ integer }
+        set_scientific = { "scientific" }
+
+program = _{ NEWLINE* ~ statement ~ sub_program* }
+    sub_program = _{ statement ~ sub_program* }
+
+WHITESPACE = _{ " " | "\t" }
