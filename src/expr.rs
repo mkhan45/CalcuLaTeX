@@ -15,6 +15,7 @@ use crate::{error::CalcError, statement::Scope};
 #[derive(Debug)]
 pub enum Expr {
     Atom(Val),
+    ParenExpr(Box<Expr>),
     Ident(String),
     FnCall(FnCall),
     Cons(Op, Vec<Expr>),
@@ -24,6 +25,7 @@ impl std::fmt::Display for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Expr::Atom(v) => write!(f, "{}", v),
+            Expr::ParenExpr(e) => write!(f, "({:?})", e),
             Expr::Ident(n) => write!(f, "{}", n),
             Expr::FnCall(fc) => write!(f, "{:?}", fc),
             Expr::Cons(op, e) => write!(f, "({:?}, {:?})", op, e),
@@ -36,6 +38,7 @@ impl Expr {
         let e = |a: &Expr| a.eval(scope);
         Ok(match self {
             Expr::Atom(v) => v.clamp_num(),
+            Expr::ParenExpr(ex) => e(ex)?,
             Expr::Ident(n) => {
                 if let Some(v) = scope.variables.get(n) {
                     v.clone()
