@@ -21,13 +21,14 @@ operation = @{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
-statement = { latex_block | line_gap_stmt | ((format_directive | dec_print_expr | print_expr | var_dec | error) ~ NEWLINE) }
+statement = { latex_block | line_gap_stmt | ((format_directive | dec_print_expr | print_expr | var_dec | alias_stmt | error) ~ NEWLINE) }
     error = { (!NEWLINE ~ ANY)* }
     line_gap_stmt = { WHITESPACE* ~ NEWLINE }
     latex_block = { "'''" ~ (!"'''" ~ ANY)* ~ "'''" }
     var_dec = { ident ~ "=" ~ expression }
     print_expr = { expression ~ "=" ~ "?" ~ unit_expr? }
     dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" ~ unit_expr? }
+    alias_stmt = { "alias" ~ ident ~ ident }
     format_directive = _{ "!" ~ (digit_set | set_scientific) }
         digit_set = { "digits" ~ " "* ~ integer }
         set_scientific = { "scientific" }
