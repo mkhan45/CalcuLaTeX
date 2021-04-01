@@ -13,4 +13,9 @@ sqrt(4) = ?
 
 ln(e^2) = ?
 
-max(5, 15, 10) = ?
+max(5 kg, 15 g, 10 mg) = ?
+
+g = -9.81 m/s^2 
+abs(g) = ?
+ceil(abs(g)) = ?
+floor(abs(g)) = ?
