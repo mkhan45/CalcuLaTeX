@@ -1,6 +1,7 @@
 pub mod val;
 
 use crate::{function::eval_fn_call, parser::fn_call::FnCall};
+use std::collections::BTreeMap;
 use std::convert::TryFrom;
 
 use val::*;
@@ -64,6 +65,18 @@ impl Expr {
             *b.clone()
         } else {
             self.clone()
+        }
+    }
+
+    pub fn resolve_aliases(&mut self, aliases: &BTreeMap<String, String>) {
+        match self {
+            Expr::Ident(n) => *n = aliases.get(n).unwrap_or(&n).to_string(),
+            Expr::ParenExpr(e) => e.resolve_aliases(aliases),
+            Expr::FnCall(FnCall { args, .. }) => {
+                args.iter_mut().for_each(|e| e.resolve_aliases(aliases))
+            }
+            Expr::Cons(_, exprs) => exprs.iter_mut().for_each(|e| e.resolve_aliases(aliases)),
+            _ => {}
         }
     }
 }

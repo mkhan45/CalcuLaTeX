@@ -46,6 +46,10 @@ pub enum Statement {
         rhs: Expr,
         unit_hint: Option<UnitHint>,
     },
+    Alias {
+        lhs: String,
+        rhs: String,
+    },
     DigitSet(usize),
     SetScientific,
     LineGap,
@@ -63,18 +67,28 @@ pub struct State {
     // The LaTeX output buffer
     pub output: String,
     pub format_args: FormatArgs,
+    pub aliases: BTreeMap<String, String>,
 }
 
 impl State {
     pub fn new(contents: &str) -> Result<Self, CalcError> {
         let output = "\\documentclass{article}\n\\begin{document}\n".to_string();
 
+        let mut aliases = BTreeMap::new();
+        aliases.insert("pi".to_string(), "\\pi".to_string());
+
         Ok(State {
             scope: Scope::default(),
             statements: parser::parse_block(&contents)?,
             output,
             format_args: FormatArgs::default(),
+            aliases,
         })
+    }
+
+    fn resolve_alias(&self, name: &str) -> String {
+        let trimmed = name.trim().to_string();
+        self.aliases.get(&trimmed).unwrap_or(&trimmed).to_string()
     }
 
     pub fn exec(&mut self) -> Result<(), CalcError> {
@@ -83,7 +97,12 @@ impl State {
             match stmt {
                 Statement::LineGap => self.output.push_str("\\\\"),
                 Statement::DigitSet(n) => self.format_args.max_digits = *n,
-                Statement::SetScientific => self.format_args.scientific_notation = true,
+                Statement::SetScientific => {
+                    self.format_args.scientific_notation = !self.format_args.scientific_notation
+                }
+                Statement::Alias { lhs, rhs } => {
+                    self.aliases.insert(lhs.to_owned(), rhs.to_owned());
+                }
                 Statement::RawLaTeX(s) => self.output.push_str(s),
                 Statement::VarDec { lhs, rhs } => {
                     // lhs is just the variable name.
@@ -97,6 +116,7 @@ impl State {
                     //      rhs: parse_expr("5 * 10 g")
                     // }
                     // ```
+                    let lhs = self.resolve_alias(lhs);
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
@@ -126,6 +146,9 @@ impl State {
                         ..self.format_args
                     };
 
+                    let mut expr = expr.clone();
+                    expr.resolve_aliases(&self.aliases);
+
                     self.output.push_str(
                         format!(
                             "${} = {}$\\\\\n",
@@ -148,6 +171,10 @@ impl State {
                     rhs,
                     unit_hint,
                 } => {
+                    let lhs = self.resolve_alias(lhs);
+                    let mut rhs = rhs.clone();
+                    rhs.resolve_aliases(&self.aliases);
+
                     // `DecPrintExpr` could probably be merged with `VarDec`,
                     // basically it's a combination of `PrintExpr` and `VarDec`
                     let val = rhs.eval(&self.scope).map_err(add_line)?;

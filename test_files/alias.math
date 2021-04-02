@@ -1,0 +1,13 @@
+alias dx \frac{dx}{dt}
+alias dy \frac{dy}{dt}
+alias dt \Delta{t}
+
+x_0 = 10 m
+y_0 = 15 m
+
+dx = 5 m/s
+dy = 10 m/s
+dt = 15 s
+
+x_f = x_0 + dx * dt = ?
+y_f = y_0 + dy * dt = ?

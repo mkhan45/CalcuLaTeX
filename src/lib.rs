@@ -17,6 +17,12 @@ pub fn generate_latex(input: &str) -> Result<String, CalcError> {
 }
 
 // these tests don't work on windows, probably because of line break weirdness.
+// Since these tests test the whole library, they're not very good for detecting where the error is
+// but they're useful to find out when there is an error.
+//
+// To add a new test or update them, I usually just find which ones are failing, generate the pdf
+// and see if it's correct, and then just copy paste the tex output into the output file. A proper
+// workflow for this would be nice.
 #[cfg(test)]
 #[cfg(not(target_os = "windows"))]
 mod tests {
@@ -54,4 +60,5 @@ mod tests {
     test_file!(power_conversion);
     test_file!(adv_unit_expr);
     test_file!(amu_precision);
+    test_file!(alias);
 }

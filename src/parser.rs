@@ -71,11 +71,19 @@ fn parse_dec_print_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
     })
 }
 
-fn parse_digit_set(r: Pair<Rule>) -> Statement {
+fn parse_digit_set(r: Pair<Rule>) -> Result<Statement, CalcError> {
     assert_eq!(r.as_rule(), Rule::digit_set);
     let mut inner = r.into_inner();
     let n_digits = inner.next().unwrap().as_str().parse::<usize>().unwrap();
-    Statement::DigitSet(n_digits)
+    Ok(Statement::DigitSet(n_digits))
+}
+
+fn parse_alias_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
+    assert_eq!(r.as_rule(), Rule::alias_stmt);
+    let mut inner = r.into_inner();
+    let lhs = inner.next().unwrap().as_str().to_string();
+    let rhs = inner.next().unwrap().as_str().to_string();
+    Ok(Statement::Alias { lhs, rhs })
 }
 
 pub fn parse_block(s: &str) -> Result<Vec<(usize, Statement)>, CalcError> {
@@ -87,11 +95,12 @@ pub fn parse_block(s: &str) -> Result<Vec<(usize, Statement)>, CalcError> {
         Ok((
             line,
             match stmt.as_rule() {
-                Rule::digit_set => parse_digit_set(stmt),
+                Rule::digit_set => parse_digit_set(stmt).map_err(add_line)?,
                 Rule::set_scientific => Statement::SetScientific,
                 Rule::var_dec => parse_var_dec(stmt).map_err(add_line)?,
                 Rule::print_expr => parse_print_stmt(stmt).map_err(add_line)?,
                 Rule::dec_print_expr => parse_dec_print_stmt(stmt).map_err(add_line)?,
+                Rule::alias_stmt => parse_alias_stmt(stmt).map_err(add_line)?,
                 Rule::line_gap_stmt => Statement::LineGap,
                 Rule::latex_block => Statement::RawLaTeX(
                     stmt.as_str()
