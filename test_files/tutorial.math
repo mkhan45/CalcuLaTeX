@@ -17,11 +17,23 @@ compile!
 
 '''
 Assign variables with =
+
+They support some LaTeX formatting
 '''
-x = 5
-y = 10 kg
-x * y = ?
-z = x kg + y = ?
+a_b = 5
+c = 10 kg
+a_b * c = ?
+z = a_b kg + c = ?
+
+'''
+You can also add aliases for hard to type variables
+'''
+alias dx \frac{dx}{dt}
+alias dt \Delta{t}
+
+dx = 10 m/s
+dt = 14 days
+x = dx * dt = ?
 
 '''
 Set the output digits or use scientific notation \\
@@ -38,7 +50,7 @@ by using !digits \{n\} or !scientific
 1 kg = ? mg
 
 '''
-Basic mathematical trig functions are supported (with more to come).
+Basic mathematical functions are supported.
 
 Additionally, builtin constants include $\pi$ and $e$.
 '''
