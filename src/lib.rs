@@ -61,4 +61,5 @@ mod tests {
     test_file!(adv_unit_expr);
     test_file!(amu_precision);
     test_file!(alias);
+    test_file!(signs);
 }
