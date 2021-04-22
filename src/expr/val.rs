@@ -127,7 +127,7 @@ impl std::ops::Mul<Val> for Val {
 
         if new_num.abs() >= 10f64 {
             new_unit.exp += new_num.log10() as i64;
-            new_num = new_num.signum() * new_num / 10f64.powi(new_num.log10() as i32);
+            new_num = new_num.signum() * (new_num / 10f64.powi(new_num.log10() as i32)).abs();
         }
 
         Val {
@@ -207,6 +207,11 @@ impl Val {
             let n = (res.num.signum() * 1.0f64 / res.num).floor();
             res.unit.exp -= 1 + n.log10() as i64;
             res.num *= 10f64.powi(n.log10() as i32 + 1);
+        }
+
+        if res.unit.mult.is_sign_negative() {
+            res.num *= -1.0;
+            res.unit.mult *= -1.0;
         }
 
         res
