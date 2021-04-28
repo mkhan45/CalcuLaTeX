@@ -234,6 +234,7 @@ impl std::convert::TryFrom<&str> for Unit {
                     | "year"
                     | "years"
                     | "pascal"
+                    | "Pa"
                     | "coulomb"
                     | "coulombs"
                     | "T"

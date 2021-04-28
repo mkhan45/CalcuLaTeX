@@ -176,11 +176,30 @@ impl Val {
     pub fn pow(&self, rhs: &Val) -> Val {
         if rhs.unit.desc.is_empty() || rhs.num.fract() == 0.0 {
             let p = rhs.num * 10f64.powi(rhs.unit.exp as i32);
-            let unit = self.unit.pow(p as i64);
+            // dbg!(self.num);
+            // dbg!(self.unit.exp);
+            // dbg!(self.unit.mult);
+            // dbg!(p);
+            // let unit = self.unit.pow(p as i64);
+            // dbg!(self.num.pow(p));
+            // dbg!(unit.exp);
+            // dbg!(unit.mult);
+            // Val {
+            //     num: self.num.pow(p),
+            //     unit,
+            // }
+
+            // lazy but simple
+            // Avoids a bug with exponentiating small values.
+            let scaled_num = self.num * 10f64.powi(self.unit.exp as i32) * self.unit.mult;
             Val {
-                num: self.num.pow(p),
-                unit,
+                num: scaled_num.pow(p),
+                unit: Unit {
+                    desc: self.unit.pow(p as i64).desc,
+                    ..Unit::default()
+                },
             }
+            .clamp_num()
         } else {
             panic!()
         }
