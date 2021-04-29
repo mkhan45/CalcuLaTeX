@@ -21,6 +21,19 @@ pub fn parse_expr(r: Pair<Rule>) -> Result<Expr, CalcError> {
                 Rule::ident => Expr::Ident(nx.as_str().trim().to_string()),
                 Rule::fn_call => Expr::FnCall(parse_fn_call(nx)?),
                 Rule::expression => Expr::ParenExpr(Box::new(parse_expr(nx)?)),
+                Rule::operation => {
+                    let op = match nx.as_str().trim() {
+                        "-" => Op::Minus,
+                        _ => return Err(CalcError::Other("Invalid prefix operation".to_string())),
+                    };
+
+                    if let Some(((), r_bp)) = prefix_binding_power(&op) {
+                        let rhs = expr_bp(inp, r_bp)?;
+                        Expr::Cons(op, vec![rhs])
+                    } else {
+                        return Err(CalcError::Other("Invalid prefix operation".to_string()));
+                    }
+                }
                 _ => {
                     dbg!(nx);
                     unreachable!();
@@ -73,6 +86,13 @@ pub fn parse_expr(r: Pair<Rule>) -> Result<Expr, CalcError> {
     }
 
     expr_bp(&mut r.into_inner(), 0)
+}
+
+fn prefix_binding_power(op: &Op) -> Option<((), u8)> {
+    Some(match op {
+        Op::Minus => ((), 9),
+        _ => return None,
+    })
 }
 
 fn postfix_binding_power(op: &Op) -> Option<(u8, ())> {

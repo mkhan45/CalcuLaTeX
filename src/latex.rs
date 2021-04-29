@@ -80,6 +80,7 @@ impl ToLaTeX for Expr {
                     a.to_latex_ext(args)?.to_string(),
                     b.to_latex_ext(args)?.to_string()
                 )),
+                (Op::Minus, [a]) => LaTeX::Math(format!("-{}", a.to_latex_ext(args)?.to_string())),
                 (Op::Mul, [a, b, ..]) => LaTeX::Math(format!(
                     "{} \\times {}",
                     a.to_latex_ext(args)?.to_string(),

@@ -12,6 +12,18 @@ pub struct Val {
     pub unit: Unit,
 }
 
+impl std::ops::Neg for Val {
+    type Output = Val;
+
+    fn neg(self) -> Self::Output {
+        Val {
+            num: self.num * -1.0,
+            ..self
+        }
+        .clamp_num()
+    }
+}
+
 impl PartialEq for Val {
     fn eq(&self, other: &Self) -> bool {
         self.num == other.num && self.unit == other.unit

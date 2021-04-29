@@ -1,5 +1,5 @@
-integer = @{ "-"? ~ ASCII_DIGIT+ }
-number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
+integer = @{ ASCII_DIGIT+ }
+number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
 ident = @{ (ASCII_ALPHA | "\\") ~ ( ASCII_ALPHANUMERIC | "_" | "{" | "}" )* }
 
 unit_expr = { unit_term ~ (unit_operation ~ unit_term)* }
@@ -10,7 +10,7 @@ unit_expr = { unit_term ~ (unit_operation ~ unit_term)* }
     paren_unit_expr = _{ "(" ~ unit_expr ~ ")" }
 
 expression = { term ~ (operation ~ term)* }
-    term = _{ fn_call | paren_expr | (ident | number) ~ unit_expr* }
+    term = _{ (operation ~ term) | fn_call | paren_expr | (ident | number) ~ unit_expr* }
     paren_expr = _{"(" ~ expression ~ ")"}
     fn_call = { ident ~ "(" ~ expression ~ ("," ~ expression )*  ~ ")" }
 

@@ -63,4 +63,5 @@ mod tests {
     test_file!(alias);
     test_file!(signs);
     test_file!(small_exp);
+    test_file!(prefix_op);
 }
