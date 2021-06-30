@@ -64,4 +64,5 @@ mod tests {
     test_file!(signs);
     test_file!(small_exp);
     test_file!(prefix_op);
+    test_file!(negative_ten);
 }
