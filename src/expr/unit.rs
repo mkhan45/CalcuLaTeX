@@ -38,7 +38,7 @@ lazy_static! {
         m.insert("peta", 15);
         m.insert("exa", 18);
         m.insert("zetta", 21);
-        m.insert("yotta", 21);
+        m.insert("yotta", 24);
         m
     };
     pub static ref UNIT_PREFIXES_ABBR: BiMap<&'static str, i64> = {
