@@ -130,6 +130,11 @@ impl ToLaTeX for BoolExpr {
                     a.to_latex_ext(args)?.to_string(),
                     b.to_latex_ext(args)?.to_string()
                 )),
+                (BoolOp::Equals, [a, b, ..]) => LaTeX::Math(format!(
+                    "{} \\equiv {}",
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
+                )),
                 _ => todo!(),
             },
         })

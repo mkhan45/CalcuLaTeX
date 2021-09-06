@@ -39,9 +39,13 @@ pub fn parse_bool_expr(r: Pair<Rule>) -> Result<BoolExpr, CalcError> {
                         "and" => BoolOp::And,
                         "or" => BoolOp::Or,
                         "implies" => BoolOp::Implies,
+                        "equals" => BoolOp::Equals,
                         _ => panic!("Bad operator {}", nx.as_str().trim()),
                     },
-                    _ => todo!(),
+                    _ => {
+                        dbg!(nx.as_str(), nx.as_rule());
+                        unimplemented!();
+                    }
                 };
 
                 if let Some((l_bp, ())) = postfix_binding_power(&op) {
@@ -90,9 +94,10 @@ fn postfix_binding_power(op: &BoolOp) -> Option<(u8, ())> {
 
 fn infix_binding_power(op: &BoolOp) -> (u8, u8) {
     match op {
-        BoolOp::Implies => (1, 2),
-        BoolOp::Or => (3, 4),
-        BoolOp::And => (5, 6),
+        BoolOp::Equals => (0, 1),
+        BoolOp::Implies => (2, 3),
+        BoolOp::Or => (4, 5),
+        BoolOp::And => (6, 7),
         _ => panic!(),
     }
 }

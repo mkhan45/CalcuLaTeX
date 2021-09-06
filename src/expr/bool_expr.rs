@@ -44,12 +44,13 @@ impl BoolExpr {
                 (BoolOp::And, [a, b]) => e(a)? && e(b)?,
                 (BoolOp::Or, [a, b]) => e(a)? || e(b)?,
                 (BoolOp::Implies, [a, b]) => implies(e(a)?, e(b)?),
+                (BoolOp::Equals, [a, b]) => e(a)? == e(b)?,
                 _ => return Err(CalcError::MathError),
             },
         })
     }
 
-    pub fn remove_parens(&self) -> Self {
+    pub fn _remove_parens(&self) -> Self {
         if let BoolExpr::ParenExpr(b) = self {
             *b.clone()
         } else {
@@ -64,4 +65,5 @@ pub enum BoolOp {
     And,
     Or,
     Implies,
+    Equals,
 }

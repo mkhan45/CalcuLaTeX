@@ -15,14 +15,15 @@ expression = { term ~ (operation ~ term)* }
     fn_call = { ident ~ "(" ~ expression ~ ("," ~ expression )*  ~ ")" }
 
 bool_expr = { bool_term ~ (bool_operation ~ bool_term)* }
-    bool_term = _{ (operation ~ term) | ident | bool_paren_expr }
+    bool_term = _{ (bool_operation ~ bool_term) | ident | bool_paren_expr }
     bool_paren_expr = _{"(" ~ bool_expr ~ ")"}
 
-bool_operation = @{ neg | and | or | implies }
+bool_operation = @{ neg | and | or | implies | equals }
     neg = { "not" }
     and = { "and" }
     or = { "or" }
     implies = { "implies" }
+    equals = { "equals" }
 
 operation = @{ add | subtract | multiply | divide | power }
     add      = { "+" }
