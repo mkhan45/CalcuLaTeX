@@ -9,6 +9,7 @@ use val::*;
 pub mod unit;
 use unit::*;
 
+pub mod bool_expr;
 pub mod unit_expr;
 
 use crate::{error::CalcError, statement::Scope};

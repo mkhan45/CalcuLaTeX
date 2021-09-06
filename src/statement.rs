@@ -1,3 +1,4 @@
+use crate::expr::bool_expr::BoolExpr;
 use crate::latex::UnitHint;
 use crate::CalcError;
 use crate::{expr::unit::Unit, latex::FormatArgs};
@@ -53,6 +54,10 @@ pub enum Statement {
     DigitSet(usize),
     SetScientific,
     LineGap,
+    TTable {
+        args: Vec<String>,
+        exprs: Vec<BoolExpr>,
+    },
     RawLaTeX(String),
 }
 
@@ -199,6 +204,10 @@ impl State {
                         .as_str(),
                     );
                     self.scope.variables.insert(lhs.clone(), val.clamp_num());
+                }
+                Statement::TTable { args, exprs } => {
+                    self.output
+                        .push_str(&crate::ttable::generate_ttable(args, exprs)?);
                 }
             }
         }

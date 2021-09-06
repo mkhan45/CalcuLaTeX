@@ -1,3 +1,4 @@
+use crate::expr::bool_expr::BoolExpr;
 use crate::parser::naive_string::parse_naive_string;
 use crate::{error::CalcError, latex::UnitHint};
 use pest::iterators::Pair;
@@ -11,6 +12,9 @@ use unit::parse_unit_expr;
 
 pub mod expr;
 use expr::parse_expr;
+
+pub mod bool_expr;
+use bool_expr::parse_bool_expr;
 
 pub mod fn_call;
 
@@ -86,6 +90,38 @@ fn parse_alias_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
     Ok(Statement::Alias { lhs, rhs })
 }
 
+fn parse_ident_list(r: Pair<Rule>) -> Result<Vec<String>, CalcError> {
+    assert_eq!(r.as_rule(), Rule::ident_list);
+    let inner = r.into_inner();
+
+    Ok(inner.map(|r| r.as_str().to_string()).collect())
+}
+
+fn parse_bool_expr_list(r: Pair<Rule>) -> Result<Vec<BoolExpr>, CalcError> {
+    assert_eq!(r.as_rule(), Rule::bool_expr_list);
+    let mut inner = r.into_inner();
+
+    let mut bool_exprs = Vec::new();
+    while let Some(r) = inner.next() {
+        bool_exprs.push(parse_bool_expr(r)?);
+    }
+
+    Ok(bool_exprs)
+}
+
+fn parse_ttable_stmt(r: Pair<Rule>) -> Result<Statement, CalcError> {
+    assert_eq!(r.as_rule(), Rule::truth_table_stmt);
+    let mut inner = r.into_inner();
+
+    let args = inner.next().unwrap();
+    let exprs = inner.next().unwrap();
+
+    let args = parse_ident_list(args)?;
+    let exprs = parse_bool_expr_list(exprs)?;
+
+    Ok(Statement::TTable { args, exprs })
+}
+
 pub fn parse_block(s: &str) -> Result<Vec<(usize, Statement)>, CalcError> {
     let inp = MathParser::parse(Rule::program, s)?;
     inp.map(|s| {
@@ -108,6 +144,7 @@ pub fn parse_block(s: &str) -> Result<Vec<(usize, Statement)>, CalcError> {
                         .trim_end_matches("'''")
                         .to_owned(),
                 ),
+                Rule::truth_table_stmt => parse_ttable_stmt(stmt).map_err(add_line)?,
                 Rule::error => {
                     return Err(CalcError::Other(format!(
                         "Invalid statement {}",
@@ -132,8 +169,19 @@ mod tests {
         parse_block(
             "
                 x = 5
-                5 + 10
+                5 + 10 = ?
             ",
-        );
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn test_ttable_parse() {
+        parse_block(
+            "
+                ttable [p, q] [p, q, p and q]
+            ",
+        )
+        .unwrap();
     }
 }
