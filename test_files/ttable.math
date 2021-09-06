@@ -1,0 +1,5 @@
+ttable [p, q] [p, q, q implies p, p and (q implies p), (p and (q implies p)) implies p]
+
+ttable [p, q, r] [p, q, r, p or q, p and r, q implies r, (p or q) and (p and r) and (q implies r), ((p or q) and (p and r) and (q implies r)) implies r]
+
+ttable [p, q, r] [p, q, r, p implies q, q implies r, p implies r, (p implies q) and (q implies r), ((p implies q) and (q implies r)) implies (p implies r)]
