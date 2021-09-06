@@ -66,4 +66,5 @@ mod tests {
     test_file!(small_exp);
     test_file!(prefix_op);
     test_file!(ttable);
+    test_file!(negative_ten);
 }
