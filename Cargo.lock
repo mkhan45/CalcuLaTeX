@@ -55,7 +55,7 @@ checksum = "ae44d1a3d5a19df61dd0c8beb138458ac2a53a7ac09eba97d55592540004306b"
 
 [[package]]
 name = "calculatex"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "bimap",
  "lazy_static",

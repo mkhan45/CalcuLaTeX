@@ -1,5 +1,6 @@
 use crate::{
     expr::unit_expr::{UnitExpr, UnitOp},
+    expr::bool_expr::{BoolExpr, BoolOp},
     parser::naive_string::StringExpr,
 };
 use crate::{parser::fn_call::FnCall, CalcError};
@@ -100,6 +101,39 @@ impl ToLaTeX for Expr {
                     "{}\\ \\mathrm{{{}}}",
                     v.to_latex_ext(args)?.to_string(),
                     s
+                )),
+                _ => todo!(),
+            },
+        })
+    }
+}
+
+impl ToLaTeX for BoolExpr {
+    fn to_latex_ext(&self, args: &FormatArgs) -> Result<LaTeX, CalcError> {
+        Ok(match self {
+            BoolExpr::ParenExpr(v) => LaTeX::Math(format!("({})", v.to_latex_ext(args)?.to_string())),
+            BoolExpr::Ident(n) => LaTeX::Math(n.to_string()),
+            BoolExpr::Cons(op, e) => match (op, e.as_slice()) {
+                (BoolOp::Or, [a, b, ..]) => LaTeX::Math(format!(
+                    "{} \\lor {}",
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
+                )),
+                (BoolOp::And, [a, b, ..]) => LaTeX::Math(format!(
+                    "{} \\land {}",
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
+                )),
+                (BoolOp::Negate, [a]) => LaTeX::Math(format!("\\neg {}", a.to_latex_ext(args)?.to_string())),
+                (BoolOp::Implies, [a, b, ..]) => LaTeX::Math(format!(
+                    "{} \\rightarrow {}",
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
+                )),
+                (BoolOp::Equals, [a, b, ..]) => LaTeX::Math(format!(
+                    "{} \\equiv {}",
+                    a.to_latex_ext(args)?.to_string(),
+                    b.to_latex_ext(args)?.to_string()
                 )),
                 _ => todo!(),
             },

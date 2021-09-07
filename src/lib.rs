@@ -1,6 +1,7 @@
 mod expr;
 mod latex;
 mod parser;
+mod ttable;
 
 mod statement;
 use statement::State;
@@ -64,4 +65,6 @@ mod tests {
     test_file!(signs);
     test_file!(small_exp);
     test_file!(prefix_op);
+    test_file!(ttable);
+    test_file!(negative_ten);
 }

@@ -14,6 +14,17 @@ expression = { term ~ (operation ~ term)* }
     paren_expr = _{"(" ~ expression ~ ")"}
     fn_call = { ident ~ "(" ~ expression ~ ("," ~ expression )*  ~ ")" }
 
+bool_expr = { bool_term ~ (bool_operation ~ bool_term)* }
+    bool_term = _{ (bool_operation ~ bool_term) | ident | bool_paren_expr }
+    bool_paren_expr = _{"(" ~ bool_expr ~ ")"}
+
+bool_operation = @{ neg | and | or | implies | equals }
+    neg = { "not" }
+    and = { "and" }
+    or = { "or" }
+    implies = { "implies" }
+    equals = { "equals" }
+
 operation = @{ add | subtract | multiply | divide | power }
     add      = { "+" }
     subtract = { "-" }
@@ -21,7 +32,10 @@ operation = @{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
-statement = { latex_block | line_gap_stmt | ((format_directive | dec_print_expr | print_expr | var_dec | alias_stmt | error) ~ NEWLINE) }
+ident_list = { "[" ~ (ident ~ ",")* ~ ident? ~ "]" }
+bool_expr_list = { "[" ~ (bool_expr ~ ",")* ~ bool_expr? ~ "]"}
+
+statement = { latex_block | line_gap_stmt | ((format_directive | dec_print_expr | print_expr | var_dec | alias_stmt | truth_table_stmt | error) ~ NEWLINE) }
     error = { (!NEWLINE ~ ANY)* }
     line_gap_stmt = { WHITESPACE* ~ NEWLINE }
     latex_block = { "'''" ~ (!"'''" ~ ANY)* ~ "'''" }
@@ -29,6 +43,7 @@ statement = { latex_block | line_gap_stmt | ((format_directive | dec_print_expr 
     print_expr = { expression ~ "=" ~ "?" ~ unit_expr? }
     dec_print_expr = { ident ~ "=" ~ expression ~ "=" ~ "?" ~ unit_expr? }
     alias_stmt = { "alias" ~ ident ~ ident }
+    truth_table_stmt = { "ttable" ~ ident_list ~ bool_expr_list }
     format_directive = _{ "!" ~ (digit_set | set_scientific) }
         digit_set = { "digits" ~ " "* ~ integer }
         set_scientific = { "scientific" }
